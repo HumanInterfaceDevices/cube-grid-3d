@@ -10,7 +10,13 @@ const Cube = ({ position }) => {
   const edges = useMemo(() => new EdgesGeometry(new BoxGeometry(1, 1, 1)), []);
 
   useFrame((state) => {
-    ref.current.position.y = Math.sin(state.clock.getElapsedTime() + position.x * 2 + position.z * 2) * 0.3;
+    const time = state.clock.getElapsedTime();
+    const delayX = (position.x + 2) * 0.7;
+    const delayZ = (position.z + 2) * 0.9;
+    const waveSpeed = 2.0;
+
+    ref.current.position.y =
+      (Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ)) * 0.15;
   });
 
   return (
@@ -20,6 +26,7 @@ const Cube = ({ position }) => {
     </group>
   );
 };
+
 
 const Controls = () => {
   const { camera, gl } = useThree();
