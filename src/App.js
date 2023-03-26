@@ -43,12 +43,14 @@ const App = () => {
   }
 
   return (
-    <Canvas>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <React.Fragment>{cubes}</React.Fragment>
-      <Controls />
-    </Canvas>
+    <div className="fixed inset-0 flex items-center justify-center">
+      <Canvas camera={{ position: [4, 4, 4], fov: 60 }}>
+        <ambientLight />
+        <pointLight position={[10, 10, 10]} />
+        <React.Fragment>{cubes}</React.Fragment>
+        <Controls />
+      </Canvas>
+    </div>
   );
 };
 
