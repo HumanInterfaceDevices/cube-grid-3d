@@ -43,17 +43,17 @@ const Controls = () => {
 const App = () => {
   const cubes = [];
 
-  for (let x = 0; x < 5; x++) {
-    for (let z = 0; z < 5; z++) {
-      cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x - 2, 0, z - 2)} />);
+  for (let x = 0; x < 10; x++) {
+    for (let z = 0; z < 10; z++) {
+      cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x - 4.5, 0, z - 4.5)} />);
     }
   }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center">
-      <Canvas camera={{ position: [4, 4, 4], fov: 60 }}>
+      <Canvas camera={{ position: [4, 10, 10], fov: 60 }}>
         <ambientLight />
-        <pointLight position={[10, 10, 10]} />
+        <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
         <Controls />
       </Canvas>
