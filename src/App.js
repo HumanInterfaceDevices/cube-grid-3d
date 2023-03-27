@@ -16,16 +16,17 @@ const animation1 = (state, position) => {
 
 const animation2 = (state, position) => {
   const time = state.clock.getElapsedTime();
-  const waveSpeed = 0.1;
-  const rippleRadius = 15;
+  const waveSpeed = 5.0;
+  const rippleRadius = 10;
   const center = { x: 12.5, z: 12.5 };
+  const decayFactor = 0.1;
 
   const dx = position.x - center.x;
   const dz = position.z - center.z;
   const distance = Math.sqrt(dx * dx + dz * dz);
 
-  const angle = (distance / rippleRadius) * 2 * Math.PI;
-  const height = Math.sin(time * waveSpeed + angle) * 0.5;
+  const phaseOffset = distance;
+  const height = Math.sin(time * waveSpeed - phaseOffset) * Math.max(0, 1 - distance * decayFactor) * 0.5;
 
   return height;
 };
