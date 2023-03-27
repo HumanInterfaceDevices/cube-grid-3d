@@ -27,7 +27,6 @@ const Cube = ({ position }) => {
   );
 };
 
-
 const Controls = () => {
   const { camera, gl } = useThree();
   const controls = useRef();
@@ -40,11 +39,58 @@ const Controls = () => {
   return <orbitControls ref={controls} args={[camera, gl.domElement]} />;
 };
 
+const CameraHandler = () => {
+  const { camera } = useThree();
+
+  const onKeyDown = (event) => {
+    const moveSpeed = 0.1;
+    const rotationSpeed = 0.025;
+
+    switch (event.code) {
+      case "ArrowUp":
+        camera.translateZ(-moveSpeed);
+        break;
+      case "ArrowDown":
+        camera.translateZ(moveSpeed);
+        break;
+      case "ArrowLeft":
+        camera.translateX(-moveSpeed);
+        break;
+      case "ArrowRight":
+        camera.translateX(moveSpeed);
+        break;
+      case "KeyW":
+        camera.rotateX(rotationSpeed);
+        break;
+      case "KeyA":
+        camera.rotateY(rotationSpeed);
+        break;
+      case "KeyS":
+        camera.rotateX(-rotationSpeed);
+        break;
+      case "KeyD":
+        camera.rotateY(-rotationSpeed);
+        break;
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  return null;
+};
+
 const App = () => {
   const cubes = [];
 
-  for (let x = 0; x < 10; x++) {
-    for (let z = 0; z < 10; z++) {
+  for (let x = 0; x < 30; x++) {
+    for (let z = 0; z < 30; z++) {
       cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x - 4.5, 0, z - 4.5)} />);
     }
   }
@@ -56,6 +102,7 @@ const App = () => {
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
         <Controls />
+        <CameraHandler />
       </Canvas>
     </div>
   );
