@@ -14,11 +14,11 @@ const animation1 = (state, position) => {
   return (Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ)) * 0.15;
 };
 
-const animation2 = (state, position) => {
+const animation2 = (state, position, gridsize) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 5.0;
   const rippleRadius = 10;
-  const center = { x: 12.5, z: 12.5 };
+  const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
   const decayFactor = 0.1;
 
   const dx = position.x - center.x;
@@ -40,8 +40,14 @@ const animation8 = () => {};
 const animation9 = () => {};
 
 
-const Cube = ({ position, animation }) => {
+const Cube = ({ position, animation, gridsize }) => {
   const ref = useRef();
+
+  const centeredPosition = useMemo(() => new Vector3(
+    position.x - (gridsize - 1) / 2,
+    0,
+    position.z - (gridsize - 1) / 2
+  ), [position, gridsize]);
 
   const edges = useMemo(() => new EdgesGeometry(new BoxGeometry(1, 1, 1)), []);
 
@@ -51,7 +57,7 @@ const Cube = ({ position, animation }) => {
         ref.current.position.y = animation1(state, position);
         break;
       case 2:
-        ref.current.position.y = animation2(state, position);
+        ref.current.position.y = animation2(state, position, gridsize);
         break;
       default:
         break;
@@ -59,13 +65,12 @@ const Cube = ({ position, animation }) => {
   });
 
   return (
-    <group ref={ref} position={position}>
+    <group ref={ref} position={centeredPosition}>
       <mesh geometry={new BoxBufferGeometry(1, 1, 1)} material={new MeshStandardMaterial({ transparent: true, opacity: 0.5 })} />
       <line geometry={edges} material={new LineBasicMaterial({ linewidth: 2, transparent: true, opacity: 0.7, color: "cyan" })} />
     </group>
   );
 };
-
 
 const Controls = ({ center }) => {
   const { camera, gl } = useThree();
@@ -140,7 +145,8 @@ const App = () => {
 
   for (let x = 0; x < gridsize; x++) {
     for (let z = 0; z < gridsize; z++) {
-      cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x, 0, z)} animation={animation} />);
+      const position = new Vector3(x, 0, z);
+      cubes.push(<Cube key={`${x}-${z}`} position={position} animation={animation} gridsize={gridsize} />);
     }
   }
   
