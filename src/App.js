@@ -31,6 +31,15 @@ const animation2 = (state, position) => {
   return height;
 };
 
+const animation3 = () => {};
+const animation4 = () => {};
+const animation5 = () => {};
+const animation6 = () => {};
+const animation7 = () => {};
+const animation8 = () => {};
+const animation9 = () => {};
+
+
 const Cube = ({ position, animation }) => {
   const ref = useRef();
 
@@ -128,15 +137,9 @@ const App = () => {
   }
 
   const onKeyDown = (event) => {
-    switch (event.code) {
-      case "Digit1":
-        setAnimation(1);
-        break;
-      case "Digit2":
-        setAnimation(2);
-        break;
-      default:
-        break;
+    const digit = parseInt(event.key, 10);
+    if (digit >= 1 && digit <= 9) {
+      setAnimation(digit);
     }
   };
 
