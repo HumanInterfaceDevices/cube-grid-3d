@@ -67,9 +67,15 @@ const Cube = ({ position, animation }) => {
 };
 
 
-const Controls = () => {
+const Controls = ({ center }) => {
   const { camera, gl } = useThree();
   const controls = useRef();
+
+  useEffect(() => {
+    camera.position.set(center.x + 15, 15, center.z + 15);
+    camera.rotation.x = -Math.PI / 4;
+    controls.current.target.set(center.x, 0, center.z);
+  }, [camera, center]);
 
   useEffect(() => {
     controls.current.addEventListener("change", gl.forceRender);
@@ -129,13 +135,15 @@ const CameraHandler = () => {
 const App = () => {
   const [animation, setAnimation] = useState(1);
   const cubes = [];
+  const gridsize = 30;
+  const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
 
-  for (let x = 0; x < 30; x++) {
-    for (let z = 0; z < 30; z++) {
-      cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x - 4.5, 0, z - 4.5)} animation={animation} />);
+  for (let x = 0; x < gridsize; x++) {
+    for (let z = 0; z < gridsize; z++) {
+      cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x, 0, z)} animation={animation} />);
     }
   }
-
+  
   const onKeyDown = (event) => {
     const digit = parseInt(event.key, 10);
     if (digit >= 1 && digit <= 9) {
@@ -152,15 +160,16 @@ const App = () => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center">
-      <Canvas camera={{ position: [4, 10, 10], fov: 60 }}>
+      <Canvas camera={{ position: [10, 10, 10], fov: 60 }}>
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
-        <Controls />
+        <Controls center={center} />
         <CameraHandler />
       </Canvas>
     </div>
   );
 };
+
 
 export default App;
