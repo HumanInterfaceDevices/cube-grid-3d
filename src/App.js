@@ -1,22 +1,51 @@
-import React, { useRef, useMemo, useEffect } from "react";
+import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, extend, useThree } from "@react-three/fiber";
 import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry, Mesh, Line } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 extend({ OrbitControls });
 
-const Cube = ({ position }) => {
+const animation1 = (state, position) => {
+  const time = state.clock.getElapsedTime();
+  const delayX = (position.x + 2) * 0.7;
+  const delayZ = (position.z + 2) * 0.9;
+  const waveSpeed = 2.0;
+
+  return (Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ)) * 0.15;
+};
+
+const animation2 = (state, position) => {
+  const time = state.clock.getElapsedTime();
+  const waveSpeed = 0.1;
+  const rippleRadius = 15;
+  const center = { x: 12.5, z: 12.5 };
+
+  const dx = position.x - center.x;
+  const dz = position.z - center.z;
+  const distance = Math.sqrt(dx * dx + dz * dz);
+
+  const angle = (distance / rippleRadius) * 2 * Math.PI;
+  const height = Math.sin(time * waveSpeed + angle) * 0.5;
+
+  return height;
+};
+
+const Cube = ({ position, animation }) => {
   const ref = useRef();
+
   const edges = useMemo(() => new EdgesGeometry(new BoxGeometry(1, 1, 1)), []);
 
   useFrame((state) => {
-    const time = state.clock.getElapsedTime();
-    const delayX = (position.x + 2) * 0.7;
-    const delayZ = (position.z + 2) * 0.9;
-    const waveSpeed = 2.0;
-
-    ref.current.position.y =
-      (Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ)) * 0.15;
+    switch (animation) {
+      case 1:
+        ref.current.position.y = animation1(state, position);
+        break;
+      case 2:
+        ref.current.position.y = animation2(state, position);
+        break;
+      default:
+        break;
+    }
   });
 
   return (
@@ -26,6 +55,7 @@ const Cube = ({ position }) => {
     </group>
   );
 };
+
 
 const Controls = () => {
   const { camera, gl } = useThree();
@@ -87,13 +117,34 @@ const CameraHandler = () => {
 };
 
 const App = () => {
+  const [animation, setAnimation] = useState(1);
   const cubes = [];
 
   for (let x = 0; x < 30; x++) {
     for (let z = 0; z < 30; z++) {
-      cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x - 4.5, 0, z - 4.5)} />);
+      cubes.push(<Cube key={`${x}-${z}`} position={new Vector3(x - 4.5, 0, z - 4.5)} animation={animation} />);
     }
   }
+
+  const onKeyDown = (event) => {
+    switch (event.code) {
+      case "Digit1":
+        setAnimation(1);
+        break;
+      case "Digit2":
+        setAnimation(2);
+        break;
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center">
