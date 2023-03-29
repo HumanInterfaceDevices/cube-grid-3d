@@ -161,15 +161,15 @@ const Cube = ({
 
 
 
-const Controls = ({ center }) => {
+const Controls = ({ center, gridsize }) => {
   const { camera, gl } = useThree();
   const controls = useRef();
 
   useEffect(() => {
-    camera.position.set(center.x + 15, 15, center.z + 15);
+    camera.position.set(center.x, center.y + (Math.sqrt(gridsize)*2), center.z);
     camera.rotation.x = -Math.PI / 4;
     controls.current.target.set(center.x, 0, center.z);
-  }, [camera, center]);
+  }, [camera, center, gridsize]);
 
   useEffect(() => {
     controls.current.addEventListener("change", gl.forceRender);
@@ -178,6 +178,7 @@ const Controls = ({ center }) => {
 
   return <orbitControls ref={controls} args={[camera, gl.domElement]} />;
 };
+
 
 const CameraHandler = () => {
   const { camera } = useThree();
@@ -228,13 +229,12 @@ const CameraHandler = () => {
 
 const App = () => {
   const [animation, setAnimation] = useState(1);
-  const cubes = [];
   const gridsize = 70;
+  const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
   const numberOfRipples = 3;
   const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
   const randomLocations = useMemo(() => generateRandomLocations(gridsize, numberOfRipples), [gridsize, numberOfRipples]);
-
 
   for (let x = 0; x < gridsize; x++) {
     for (let z = 0; z < gridsize; z++) {
@@ -269,11 +269,11 @@ const App = () => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center">
-      <Canvas camera={{ position: [10, 10, 10], fov: 60 }}>
+      <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
-        <Controls center={center} />
+        <Controls center={center} gridsize={gridsize} />
         <CameraHandler />
       </Canvas>
     </div>
