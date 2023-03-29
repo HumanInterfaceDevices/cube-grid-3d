@@ -26,6 +26,14 @@ const generateRandomLocations = (gridsize, numberOfLocations) => {
   return locations;
 };
 
+const generateRandomDurations = (numberOfRipples, minDuration, maxDuration) => {
+  const durations = [];
+  for (let i = 0; i < numberOfRipples; i++) {
+    durations.push(Math.random() * (maxDuration - minDuration) + minDuration);
+  }
+  return durations;
+};
+
 const animation1 = (state, position) => {
   const time = state.clock.getElapsedTime();
   const delayX = (position.x + 2) * 0.7;
@@ -65,14 +73,6 @@ const animation3 = (state, position, gridsize, randomOffsets) => {
   return height * raindropIntensity;
 };
 
-const generateRandomDurations = (numberOfRipples, minDuration, maxDuration) => {
-  const durations = [];
-  for (let i = 0; i < numberOfRipples; i++) {
-    durations.push(Math.random() * (maxDuration - minDuration) + minDuration);
-  }
-  return durations;
-};
-
 const animation4 = (state, position, gridsize, numberOfRipples, randomLocations, randomDurations) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 5.0;
@@ -102,10 +102,6 @@ const animation4 = (state, position, gridsize, numberOfRipples, randomLocations,
 
   return scaledHeight;
 };
-
-
-
-
 
 const animation5 = () => {};
 const animation6 = () => {};
@@ -251,7 +247,8 @@ const App = () => {
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
   const numberOfRipples = 3;
   const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
-  const randomLocations = useMemo(() => generateRandomLocations(gridsize, numberOfRipples), [gridsize, numberOfRipples]);
+  const margin = 4;
+  const randomLocations = useMemo(() => generateRandomLocations(gridsize, numberOfRipples, margin), [gridsize, numberOfRipples, margin]);
   const randomDurations = useMemo(() => generateRandomDurations(numberOfRipples, 4, 6), [numberOfRipples]);
 
   for (let x = 0; x < gridsize; x++) {
@@ -269,7 +266,7 @@ const App = () => {
           randomDurations={randomDurations}
         />
       );
-          }
+    }
   }
     
   const onKeyDown = (event) => {
@@ -298,6 +295,5 @@ const App = () => {
     </div>
   );
 };
-
 
 export default App;
