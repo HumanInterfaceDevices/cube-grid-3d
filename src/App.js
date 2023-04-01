@@ -73,7 +73,17 @@ const animation3 = (state, position, gridsize, randomOffsets) => {
   return height * raindropIntensity;
 };
 
-const animation4 = (state, position, gridsize, numberOfRipples, randomLocations, randomDurations, setRandomLocations, completedRipples, setCompletedRipples) => {
+const animation4 = (
+  state,
+  position,
+  gridsize,
+  numberOfRipples,
+  randomLocations,
+  randomDurations,
+  setRandomLocations,
+  completedRipples,
+  setCompletedRipples
+) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 5.0;
   const rippleRadius = 8; // Fixed small radius
@@ -102,10 +112,20 @@ const animation4 = (state, position, gridsize, numberOfRipples, randomLocations,
           return updatedRipples;
         });
 
-        if (completedRipples.every((completed) => completed)) {
-          setRandomLocations(generateRandomLocations(gridsize, numberOfRipples));
-          setCompletedRipples(Array(numberOfRipples).fill(false));
-        }
+        // Update the location for the completed ripple independently
+        setRandomLocations((prevRandomLocations) => {
+          const newLocation = generateRandomLocations(gridsize, 1)[0];
+          const updatedLocations = [...prevRandomLocations];
+          updatedLocations[index] = newLocation;
+          return updatedLocations;
+        });
+
+        // Reset the completedRipples state for the completed ripple
+        setCompletedRipples((prevCompletedRipples) => {
+          const updatedRipples = [...prevCompletedRipples];
+          updatedRipples[index] = false;
+          return updatedRipples;
+        });
       }
     }
   });
@@ -115,6 +135,7 @@ const animation4 = (state, position, gridsize, numberOfRipples, randomLocations,
 
   return scaledHeight;
 };
+
 
 
 const animation5 = () => {};
