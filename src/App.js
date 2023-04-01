@@ -73,7 +73,7 @@ const animation3 = (state, position, gridsize, randomOffsets) => {
   return height * raindropIntensity;
 };
 
-const animation4 = (state, position, gridsize, numberOfRipples, randomLocations, randomDurations) => {
+const animation4 = (state, position, gridsize, numberOfRipples, randomLocations, randomDurations, setRandomLocations, completedRipples, setCompletedRipples) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 5.0;
   const rippleRadius = 8; // Fixed small radius
@@ -94,6 +94,19 @@ const animation4 = (state, position, gridsize, numberOfRipples, randomLocations,
       const decayFactor = 1.0 / rippleRadius;
 
       height += timeDecay * Math.sin(adjustedTime * waveSpeed - phaseOffset) * Math.max(0, 1 - distance * decayFactor) * 0.5;
+
+      if (completedRipples[index] === false && adjustedTime >= loopDuration - 0.5) {
+        setCompletedRipples((prevCompletedRipples) => {
+          const updatedRipples = [...prevCompletedRipples];
+          updatedRipples[index] = true;
+          return updatedRipples;
+        });
+
+        if (completedRipples.every((completed) => completed)) {
+          setRandomLocations(generateRandomLocations(gridsize, numberOfRipples));
+          setCompletedRipples(Array(numberOfRipples).fill(false));
+        }
+      }
     }
   });
 
@@ -102,6 +115,7 @@ const animation4 = (state, position, gridsize, numberOfRipples, randomLocations,
 
   return scaledHeight;
 };
+
 
 const animation5 = () => {};
 const animation6 = () => {};
@@ -118,6 +132,9 @@ const Cube = ({
   randomLocations,
   randomOffsets,
   randomDurations,
+  setRandomLocations,
+  completedRipples,
+  setCompletedRipples,
 }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
@@ -147,10 +164,20 @@ const Cube = ({
           randomOffsets
         );
         break;
-      case 4:
-        newY = animation4(state, position, gridsize, numberOfRipples, randomLocations, randomDurations);
-        break;
-      default:
+        case 4:
+          newY = animation4(
+            state,
+            position,
+            gridsize,
+            numberOfRipples,
+            randomLocations,
+            randomDurations,
+            setRandomLocations,
+            completedRipples,
+            setCompletedRipples
+          );
+          break;
+        default:
         break;
     }
 
@@ -241,14 +268,15 @@ const CameraHandler = () => {
 };
 
 const App = () => {
-  const [animation, setAnimation] = useState(1);
   const gridsize = 70;
+  const [animation, setAnimation] = useState(1);
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
   const numberOfRipples = 3;
   const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
   const margin = 4;
-  const randomLocations = useMemo(() => generateRandomLocations(gridsize, numberOfRipples, margin), [gridsize, numberOfRipples, margin]);
+  const [randomLocations, setRandomLocations] = useState(generateRandomLocations(gridsize, numberOfRipples, margin));
+  const [completedRipples, setCompletedRipples] = useState(Array(numberOfRipples).fill(false));
   const randomDurations = useMemo(() => generateRandomDurations(numberOfRipples, 4, 6), [numberOfRipples]);
 
   for (let x = 0; x < gridsize; x++) {
@@ -264,6 +292,9 @@ const App = () => {
           randomLocations={randomLocations}
           randomOffsets={randomOffsets}
           randomDurations={randomDurations}
+          setRandomLocations={setRandomLocations}
+          completedRipples={completedRipples}
+          setCompletedRipples={setCompletedRipples}
         />
       );
     }
