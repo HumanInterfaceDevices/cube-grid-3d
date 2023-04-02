@@ -18,9 +18,9 @@ import {
 extend({ OrbitControls });
 
 // Numerical constants
-let numberOfDrops = 15;
+let numberOfDrops = 20;
 let gridsize = 50;
-let margin = 4;
+let margin = 0;
 
 const timeNow = () => {
   return Date.now();
@@ -48,18 +48,10 @@ const generateRandomLocation = (gridsize, margin) => {
   return new Vector3(x, 0, z);
 };
 
-const generateRandomLocations = (gridsize, numberOfLocations, margin) => {
-  const locations = [];
-  for (let i = 0; i < numberOfLocations; i++) {
-    locations.push(generateRandomLocation(gridsize, margin));
-  }
-  return locations;
-};
-
 const raindrops = [];
 for (let i = 0; i < numberOfDrops; i++) {
   let location = generateRandomLocation(gridsize, margin);
-  let duration = generateRandomDuration(4, 6);
+  let duration = generateRandomDuration(1, 6);
   let due = timeNow() + duration;
   raindrops.push({
     location,
@@ -130,14 +122,14 @@ const animation4 = (state, position, raindrops) => {
     let { location, duration, complete } = raindrop;
 
     // Create adjustedTime to control how long until the ripples disappear
-    const adjustedTime = ((raindrop.due-0.5) - timeNow()) * timeDecayFactor / 4000;
-
+    const adjustedTime =
+      ((raindrop.due - 0.5 - timeNow()) * timeDecayFactor) / 4000;
 
     if (complete) {
       location = generateRandomLocation(gridsize, margin);
       raindrop.location = location;
-      duration = generateRandomDuration(1, 6);
-      raindrop.due = timeNow() + duration * 1000;
+      duration = generateRandomDuration(500, 4000);
+      raindrop.due = timeNow() + duration;
       complete = false;
       raindrop.complete = complete;
     }
@@ -151,15 +143,16 @@ const animation4 = (state, position, raindrops) => {
 
       const phaseOffset = distance;
       height +=
-        Math.sin((time+adjustedTime) * waveSpeed - phaseOffset) *
+        Math.sin((time + adjustedTime) * waveSpeed - phaseOffset) *
         Math.max(0, 1 - distance * decayFactor) *
-        0.5 * adjustedTime;
+        0.5 *
+        adjustedTime;
     }
 
     if (timeNow() >= raindrop.due) {
       raindrop.complete = true;
     }
-  }); 
+  });
 
   const scaledHeight = height * heightMultiplier;
 
@@ -349,6 +342,7 @@ const App = () => {
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
+        <color attach="background" args={["black"]} />
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
