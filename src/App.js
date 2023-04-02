@@ -1,9 +1,30 @@
 import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, extend, useThree } from "@react-three/fiber";
-import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry, Mesh, Line } from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import {
+  BoxGeometry,
+  Vector3,
+  EdgesGeometry,
+  LineBasicMaterial,
+  MeshStandardMaterial,
+  BoxBufferGeometry,
+  // Mesh,
+  // Line,
+} from "three";
+import {
+  OrbitControls,
+  // MapControls,
+} from "three/examples/jsm/controls/OrbitControls";
 
 extend({ OrbitControls });
+
+// Numerical constants
+let numberOfDrops = 15;
+let gridsize = 50;
+let margin = 4;
+
+const timeNow = () => {
+  return Date.now();
+};
 
 const generateRandomOffsets = (gridsize) => {
   const offsets = [];
@@ -16,23 +37,36 @@ const generateRandomOffsets = (gridsize) => {
   return offsets;
 };
 
-const generateRandomLocations = (gridsize, numberOfLocations) => {
+const generateRandomDuration = (minDuration, maxDuration) => {
+  const duration = Math.random() * (maxDuration - minDuration) + minDuration;
+  return duration;
+};
+
+const generateRandomLocation = (gridsize, margin) => {
+  const x = Math.floor(Math.random() * (gridsize - 2 * margin) + margin);
+  const z = Math.floor(Math.random() * (gridsize - 2 * margin) + margin);
+  return new Vector3(x, 0, z);
+};
+
+const generateRandomLocations = (gridsize, numberOfLocations, margin) => {
   const locations = [];
   for (let i = 0; i < numberOfLocations; i++) {
-    const x = Math.floor(Math.random() * gridsize);
-    const z = Math.floor(Math.random() * gridsize);
-    locations.push(new Vector3(x, 0, z));
+    locations.push(generateRandomLocation(gridsize, margin));
   }
   return locations;
 };
 
-const generateRandomDurations = (numberOfRipples, minDuration, maxDuration) => {
-  const durations = [];
-  for (let i = 0; i < numberOfRipples; i++) {
-    durations.push(Math.random() * (maxDuration - minDuration) + minDuration);
-  }
-  return durations;
-};
+const raindrops = [];
+for (let i = 0; i < numberOfDrops; i++) {
+  let location = generateRandomLocation(gridsize, margin);
+  let duration = generateRandomDuration(4, 6);
+  let due = timeNow() + duration;
+  raindrops.push({
+    location,
+    due,
+    complete: false,
+  });
+}
 
 const animation1 = (state, position) => {
   const time = state.clock.getElapsedTime();
@@ -40,7 +74,11 @@ const animation1 = (state, position) => {
   const delayZ = (position.z + 2) * 0.9;
   const waveSpeed = 2.0;
 
-  return (Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ)) * 0.15;
+  return (
+    (Math.sin(time * waveSpeed + delayX) +
+      Math.sin(time * waveSpeed + delayZ)) *
+    0.15
+  );
 };
 
 const animation2 = (state, position, gridsize) => {
@@ -55,12 +93,15 @@ const animation2 = (state, position, gridsize) => {
   const distance = Math.sqrt(dx * dx + dz * dz);
 
   const phaseOffset = distance;
-  const height = Math.sin(time * waveSpeed - phaseOffset) * Math.max(0, 1 - distance * decayFactor) * 0.5;
+  const height =
+    Math.sin(time * waveSpeed - phaseOffset) *
+    Math.max(0, 1 - distance * decayFactor) *
+    0.5;
 
   return height;
 };
 
-const animation3 = (state, position, gridsize, randomOffsets) => {
+const animation3 = (state, position, randomOffsets) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 12.0;
   const raindropSize = 1.0;
@@ -68,75 +109,62 @@ const animation3 = (state, position, gridsize, randomOffsets) => {
 
   const offsetX = randomOffsets[position.x][position.z];
 
-  const height = Math.sin(time * waveSpeed + offsetX) * Math.cos(time * waveSpeed + offsetX) * raindropSize;
+  const height =
+    Math.sin(time * waveSpeed + offsetX) *
+    Math.cos(time * waveSpeed + offsetX) *
+    raindropSize;
 
   return height * raindropIntensity;
 };
 
-const animation4 = (
-  state,
-  position,
-  gridsize,
-  numberOfRipples,
-  randomLocations,
-  randomDurations,
-  setRandomLocations,
-  completedRipples,
-  setCompletedRipples
-) => {
+const animation4 = (state, position, raindrops) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 5.0;
-  const rippleRadius = 8; // Fixed small radius
-  const timeDecayFactor = 1.5; // Adjust this value to control how quickly ripples get shorter
+  const rippleRadius = 4;
+  const heightMultiplier = 2; // Start at twice the height
+  const timeDecayFactor = 1.0; // Controls how quickly ripples get shorter
 
   let height = 0;
 
-  randomLocations.forEach((location, index) => {
+  raindrops.forEach((raindrop) => {
+    let { location, duration, complete } = raindrop;
+
+    // Create adjustedTime to control how long until the ripples disappear
+    const adjustedTime = ((raindrop.due-0.5) - timeNow()) * timeDecayFactor / 4000;
+
+
+    if (complete) {
+      location = generateRandomLocation(gridsize, margin);
+      raindrop.location = location;
+      duration = generateRandomDuration(1, 6);
+      raindrop.due = timeNow() + duration * 1000;
+      complete = false;
+      raindrop.complete = complete;
+    }
+
     const dx = position.x - location.x;
     const dz = position.z - location.z;
     const distance = Math.sqrt(dx * dx + dz * dz);
 
     if (distance <= rippleRadius) {
+      const decayFactor = 1.0 / rippleRadius; // Adjust decay factor based on ripple radius
+
       const phaseOffset = distance;
-      const loopDuration = randomDurations[index];
-      const adjustedTime = (time - index * (1.0 / numberOfRipples)) % loopDuration;
-      const timeDecay = Math.exp(-adjustedTime * timeDecayFactor);
-      const decayFactor = 1.0 / rippleRadius;
-
-      height += timeDecay * Math.sin(adjustedTime * waveSpeed - phaseOffset) * Math.max(0, 1 - distance * decayFactor) * 0.5;
-
-      if (completedRipples[index] === false && adjustedTime >= loopDuration - 0.5) {
-        setCompletedRipples((prevCompletedRipples) => {
-          const updatedRipples = [...prevCompletedRipples];
-          updatedRipples[index] = true;
-          return updatedRipples;
-        });
-
-        // Update the location for the completed ripple independently
-        setRandomLocations((prevRandomLocations) => {
-          const newLocation = generateRandomLocations(gridsize, 1)[0];
-          const updatedLocations = [...prevRandomLocations];
-          updatedLocations[index] = newLocation;
-          return updatedLocations;
-        });
-
-        // Reset the completedRipples state for the completed ripple
-        setCompletedRipples((prevCompletedRipples) => {
-          const updatedRipples = [...prevCompletedRipples];
-          updatedRipples[index] = false;
-          return updatedRipples;
-        });
-      }
+      height +=
+        Math.sin((time+adjustedTime) * waveSpeed - phaseOffset) *
+        Math.max(0, 1 - distance * decayFactor) *
+        0.5 * adjustedTime;
     }
-  });
 
-  const heightMultiplier = 2; // Start at twice the height
+    if (timeNow() >= raindrop.due) {
+      raindrop.complete = true;
+    }
+  }); 
+
   const scaledHeight = height * heightMultiplier;
 
   return scaledHeight;
 };
-
-
 
 const animation5 = () => {};
 const animation6 = () => {};
@@ -144,27 +172,19 @@ const animation7 = () => {};
 const animation8 = () => {};
 const animation9 = () => {};
 
-
-const Cube = ({
-  position,
-  animation,
-  gridsize,
-  numberOfRipples,
-  randomLocations,
-  randomOffsets,
-  randomDurations,
-  setRandomLocations,
-  completedRipples,
-  setCompletedRipples,
-}) => {
+const Cube = ({ position, animation, gridsize, randomOffsets }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
 
-  const centeredPosition = useMemo(() => new Vector3(
-    position.x - (gridsize - 1) / 2,
-    0,
-    position.z - (gridsize - 1) / 2
-  ), [position, gridsize]);
+  const centeredPosition = useMemo(
+    () =>
+      new Vector3(
+        position.x - (gridsize - 1) / 2,
+        0,
+        position.z - (gridsize - 1) / 2
+      ),
+    [position, gridsize]
+  );
 
   const edges = useMemo(() => new EdgesGeometry(new BoxGeometry(1, 1, 1)), []);
 
@@ -178,27 +198,12 @@ const Cube = ({
         newY = animation2(state, position, gridsize);
         break;
       case 3:
-        newY = animation3(
-          state,
-          position,
-          gridsize,
-          randomOffsets
-        );
+        newY = animation3(state, position, randomOffsets);
         break;
-        case 4:
-          newY = animation4(
-            state,
-            position,
-            gridsize,
-            numberOfRipples,
-            randomLocations,
-            randomDurations,
-            setRandomLocations,
-            completedRipples,
-            setCompletedRipples
-          );
-          break;
-        default:
+      case 4:
+        newY = animation4(state, position, raindrops);
+        break;
+      default:
         break;
     }
 
@@ -213,21 +218,37 @@ const Cube = ({
 
   return (
     <group ref={ref} position={centeredPosition}>
-      <mesh geometry={new BoxBufferGeometry(1, 1, 1)} material={<MeshStandardMaterial color={materialColor} transparent={true} opacity={0.5} />} />
-      <line geometry={edges} material={new LineBasicMaterial({ linewidth: 2, transparent: true, opacity: 0.7, color: "cyan" })} />
+      <mesh
+        geometry={new BoxBufferGeometry(1, 1, 1)}
+        material={
+          <MeshStandardMaterial
+            color={materialColor}
+            transparent={true}
+            opacity={0.5}
+          />
+        }
+      />
+      <line
+        geometry={edges}
+        material={
+          new LineBasicMaterial({
+            linewidth: 2,
+            transparent: true,
+            opacity: 0.7,
+            color: "cyan",
+          })
+        }
+      />
     </group>
   );
 };
 
-
-
-
 const Controls = ({ center, gridsize }) => {
   const { camera, gl } = useThree();
-  const controls = useRef();
+  const controls = useRef(); // Store controls in a ref so that they aren't recreated on every render
 
   useEffect(() => {
-    camera.position.set(center.x, center.y + (Math.sqrt(gridsize)*2), center.z);
+    camera.position.set(center.x, center.y + Math.sqrt(gridsize) * 2, center.z);
     camera.rotation.x = -Math.PI / 4;
     controls.current.target.set(center.x, 0, center.z);
   }, [camera, center, gridsize]);
@@ -239,7 +260,6 @@ const Controls = ({ center, gridsize }) => {
 
   return <orbitControls ref={controls} args={[camera, gl.domElement]} />;
 };
-
 
 const CameraHandler = () => {
   const { camera } = useThree();
@@ -289,16 +309,13 @@ const CameraHandler = () => {
 };
 
 const App = () => {
-  const gridsize = 70;
   const [animation, setAnimation] = useState(1);
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
-  const numberOfRipples = 3;
-  const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
-  const margin = 4;
-  const [randomLocations, setRandomLocations] = useState(generateRandomLocations(gridsize, numberOfRipples, margin));
-  const [completedRipples, setCompletedRipples] = useState(Array(numberOfRipples).fill(false));
-  const randomDurations = useMemo(() => generateRandomDurations(numberOfRipples, 4, 6), [numberOfRipples]);
+  const randomOffsets = useMemo(
+    () => generateRandomOffsets(gridsize),
+    [gridsize]
+  );
 
   for (let x = 0; x < gridsize; x++) {
     for (let z = 0; z < gridsize; z++) {
@@ -309,18 +326,12 @@ const App = () => {
           position={position}
           animation={animation}
           gridsize={gridsize}
-          numberOfRipples={numberOfRipples}
-          randomLocations={randomLocations}
           randomOffsets={randomOffsets}
-          randomDurations={randomDurations}
-          setRandomLocations={setRandomLocations}
-          completedRipples={completedRipples}
-          setCompletedRipples={setCompletedRipples}
         />
       );
     }
   }
-    
+
   const onKeyDown = (event) => {
     const digit = parseInt(event.key, 10);
     if (digit >= 1 && digit <= 9) {
