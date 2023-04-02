@@ -21,6 +21,7 @@ extend({ OrbitControls });
 let numberOfDrops = 20;
 let gridsize = 50;
 let margin = 0;
+let cubeColorOn = false;
 
 const timeNow = () => {
   return Date.now();
@@ -59,6 +60,36 @@ for (let i = 0; i < numberOfDrops; i++) {
     complete: false,
   });
 }
+
+const lerpColor = (color1, color2, factor) => {
+  const r = color1.r + factor * (color2.r - color1.r);
+  const g = color1.g + factor * (color2.g - color1.g);
+  const b = color1.b + factor * (color2.b - color1.b);
+
+  return { r, g, b };
+};
+
+const calculateCubeColor = (height) => {
+  const colorNegative = { r: 0, g: 0, b: 255 }; // Blue for negative heights
+  const colorZero = { r: 0, g: 255, b: 0 }; // Green for zero height
+  const colorPositive = { r: 255, g: 0, b: 0 }; // Red for positive heights
+
+  let color;
+
+  if (height < -0.01) {
+    color = colorNegative;
+    // const factor = Math.abs(height) / Math.abs(height + 1); // Adjust the factor if needed
+    // color = lerpColor(colorZero, colorNegative, factor);
+  } else if (height > 0.01) {
+    color = colorPositive;
+    // const factor = height / (height + 1); // Adjust the factor if needed
+    // color = lerpColor(colorZero, colorPositive, factor);
+  } else {
+    color = colorZero;
+  }
+
+  return `rgb(${color.r}, ${color.g}, ${color.b})`;
+};
 
 const animation1 = (state, position) => {
   const time = state.clock.getElapsedTime();
@@ -200,11 +231,7 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
         break;
     }
 
-    if (newY !== 0) {
-      setMaterialColor("red");
-    } else {
-      setMaterialColor("white");
-    }
+    setMaterialColor((cubeColorOn ? calculateCubeColor(newY):"red"));
 
     ref.current.position.y = newY;
   });
@@ -225,10 +252,10 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
         geometry={edges}
         material={
           new LineBasicMaterial({
-            linewidth: 2,
+            linewidth: 1,
             transparent: true,
             opacity: 0.7,
-            color: "cyan",
+            color: materialColor,
           })
         }
       />
