@@ -1,19 +1,7 @@
 import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, extend, useThree } from "@react-three/fiber";
-import {
-  BoxGeometry,
-  Vector3,
-  EdgesGeometry,
-  LineBasicMaterial,
-  MeshStandardMaterial,
-  BoxBufferGeometry,
-  // Mesh,
-  // Line,
-} from "three";
-import {
-  OrbitControls,
-  // MapControls,
-} from "three/examples/jsm/controls/OrbitControls";
+import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry,} from "three";
+import { OrbitControls,} from "three/examples/jsm/controls/OrbitControls";
 
 extend({ OrbitControls });
 
@@ -23,10 +11,19 @@ let gridsize = 40;
 let margin = 0;
 let cubeColorOn = false;
 
+/**
+ * Get the current time in milliseconds since the Unix epoch.
+ * @returns {number} Current time in milliseconds.
+ */
 const timeNow = () => {
   return Date.now();
 };
 
+/**
+ * Generate a 2D array of random offsets for a grid of given size.
+ * @param {number} gridsize - The size of the grid.
+ * @returns {Array<Array<number>>} 2D array of random offsets.
+ */
 const generateRandomOffsets = (gridsize) => {
   const offsets = [];
   for (let x = 0; x < gridsize; x++) {
@@ -38,17 +35,32 @@ const generateRandomOffsets = (gridsize) => {
   return offsets;
 };
 
+/**
+ * Generate a random duration within a specified range.
+ * @param {number} minDuration - The minimum duration.
+ * @param {number} maxDuration - The maximum duration.
+ * @returns {number} A random duration between minDuration and maxDuration.
+ */
 const generateRandomDuration = (minDuration, maxDuration) => {
   const duration = Math.random() * (maxDuration - minDuration) + minDuration;
   return duration;
 };
 
+/**
+ * Generate a random location within a grid.
+ * @param {number} gridsize - The size of the grid.
+ * @param {number} margin - The margin around the grid.
+ * @returns {Vector3} A Vector3 representing the random location.
+ */
 const generateRandomLocation = (gridsize, margin) => {
   const x = Math.floor(Math.random() * (gridsize - 2 * margin) + margin);
   const z = Math.floor(Math.random() * (gridsize - 2 * margin) + margin);
   return new Vector3(x, 0, z);
 };
 
+/**
+ * Generate raindrops.
+ */
 const raindrops = [];
 for (let i = 0; i < numberOfDrops; i++) {
   let location = generateRandomLocation(gridsize, margin);
@@ -56,19 +68,17 @@ for (let i = 0; i < numberOfDrops; i++) {
   let due = timeNow() + duration;
   raindrops.push({
     location,
+    duration,
     due,
     complete: false,
   });
 }
 
-const lerpColor = (color1, color2, factor) => {
-  const r = color1.r + factor * (color2.r - color1.r);
-  const g = color1.g + factor * (color2.g - color1.g);
-  const b = color1.b + factor * (color2.b - color1.b);
-
-  return { r, g, b };
-};
-
+/**
+ * Calculate the color of a cube based on its height.
+ * @param {number} height - The height of the cube.
+ * @returns {string} A string representing the color in RGB format.
+ */
 const calculateCubeColor = (height) => {
   const colorNegative = { r: 0, g: 0, b: 255 }; // Blue for negative heights
   const colorZero = { r: 0, g: 255, b: 0 }; // Green for zero height
@@ -78,12 +88,8 @@ const calculateCubeColor = (height) => {
 
   if (height < -0.01) {
     color = colorNegative;
-    // const factor = Math.abs(height) / Math.abs(height + 1); // Adjust the factor if needed
-    // color = lerpColor(colorZero, colorNegative, factor);
   } else if (height > 0.01) {
     color = colorPositive;
-    // const factor = height / (height + 1); // Adjust the factor if needed
-    // color = lerpColor(colorZero, colorPositive, factor);
   } else {
     color = colorZero;
   }
@@ -91,6 +97,9 @@ const calculateCubeColor = (height) => {
   return `rgb(${color.r}, ${color.g}, ${color.b})`;
 };
 
+/**
+ * Animation Functions
+ */
 const animation1 = (state, position) => {
   const time = state.clock.getElapsedTime();
   const delayX = (position.x + 2) * 0.7;
@@ -107,7 +116,7 @@ const animation1 = (state, position) => {
 const animation2 = (state, position, gridsize) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 5.0;
-  const rippleRadius = gridsize / 2 - 1; // Adjust this value to change the ripple size
+  const rippleRadius = gridsize / 2 - margin;
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
   const decayFactor = 1.0 / rippleRadius; // Adjust decay factor based on ripple radius
 
@@ -142,15 +151,15 @@ const animation3 = (state, position, randomOffsets) => {
 
 const animation4 = (state, position, raindrops) => {
   const time = state.clock.getElapsedTime();
-  const waveSpeed = 5.0;
+  const waveSpeed = 12.0;
   const rippleRadius = 4;
   const heightMultiplier = 2; // Start at twice the height
-  const timeDecayFactor = 1.0; // Controls how quickly ripples get shorter
+  const timeDecayFactor = 2.0; // Controls how quickly ripples get shorter
 
   let height = 0;
 
   raindrops.forEach((raindrop) => {
-    let { location, duration, complete } = raindrop;
+    let { location, duration, due, complete } = raindrop;
 
     // Create adjustedTime to control how long until the ripples disappear
     const adjustedTime =
@@ -160,11 +169,14 @@ const animation4 = (state, position, raindrops) => {
       location = generateRandomLocation(gridsize, margin);
       raindrop.location = location;
       duration = generateRandomDuration(500, 4000);
-      raindrop.due = timeNow() + duration;
+      raindrop.duration = duration;
+      due = timeNow() + duration;
+      raindrop.due = due;
       complete = false;
       raindrop.complete = complete;
     }
 
+    const intensity = (due - timeNow()) / duration;
     const dx = position.x - location.x;
     const dz = position.z - location.z;
     const distance = Math.sqrt(dx * dx + dz * dz);
@@ -176,8 +188,8 @@ const animation4 = (state, position, raindrops) => {
       height +=
         Math.sin((time + adjustedTime) * waveSpeed - phaseOffset) *
         Math.max(0, 1 - distance * decayFactor) *
-        0.5 *
-        adjustedTime;
+        adjustedTime *
+        intensity;
     }
 
     if (timeNow() >= raindrop.due) {
@@ -196,6 +208,15 @@ const animation7 = () => {};
 const animation8 = () => {};
 const animation9 = () => {};
 
+/**
+ * Cube component. Renders a cube at the given position with the specified animation.
+ * @param {Object} props - The properties of the Cube component.
+ * @param {Vector3} props.position - The position of the cube.
+ * @param {number} props.animation - The animation number to apply.
+ * @param {number} props.gridsize - The size of the grid.
+ * @param {Array<Array<number>>} props.randomOffsets - 2D array of random offsets.
+ * @returns {React.Element} The rendered Cube component.
+ */
 const Cube = ({ position, animation, gridsize, randomOffsets }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
@@ -235,7 +256,7 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
     if (newMaterialColor !== materialColor) {
       setMaterialColor(newMaterialColor);
     }
-    
+
     ref.current.position.y = newY;
   });
 
@@ -266,14 +287,21 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
   );
 };
 
+/**
+ * Controls component. Handles camera controls.
+ * @param {Object} props - The properties of the Controls component.
+ * @param {Vector3} props.center - The center of the grid.
+ * @param {number} props.gridsize - The size of the grid.
+ * @returns {React.Element} The rendered Controls component.
+ */
 const Controls = ({ center, gridsize }) => {
   const { camera, gl } = useThree();
   const controls = useRef(); // Store controls in a ref so that they aren't recreated on every render
 
   useEffect(() => {
-    camera.position.set(center.x, center.y + Math.sqrt(gridsize) * 2, center.z);
+    camera.position.set(center.x + Math.sqrt(gridsize), center.y + Math.sqrt(gridsize) * 2, center.z + Math.sqrt(gridsize));
     camera.rotation.x = -Math.PI / 4;
-    controls.current.target.set(center.x, 0, center.z);
+    controls.current.target.set(center.x, center.y - Math.sqrt(gridsize) * 3, center.z);
   }, [camera, center, gridsize]);
 
   useEffect(() => {
@@ -284,6 +312,10 @@ const Controls = ({ center, gridsize }) => {
   return <orbitControls ref={controls} args={[camera, gl.domElement]} />;
 };
 
+/**
+ * CameraHandler component. Handles camera movements via keyboard input.
+ * @returns {React.Element} The rendered CameraHandler component.
+ */
 const CameraHandler = () => {
   const { camera } = useThree();
 
@@ -331,6 +363,10 @@ const CameraHandler = () => {
   return null;
 };
 
+/**
+ * Main App component.
+ * @returns {React.Element} The rendered App component.
+ */
 const App = () => {
   const [animation, setAnimation] = useState(1);
   const [gridsize, setGridsize] = useState(50); // Set initial gridsize
@@ -393,7 +429,7 @@ const App = () => {
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
-      <color attach="background" args={["black"]} />
+        <color attach="background" args={["black"]} />
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
@@ -401,6 +437,16 @@ const App = () => {
         <CameraHandler />
       </Canvas>
       <div className="absolute top-4 left-4">
+      <label htmlFor="gridsize-slider">Grid size:</label>
+        <input
+          id="gridsize-slider"
+          type="range"
+          min="10"
+          max="60"
+          value={gridsize}
+          style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+          onChange={handleGridSizeChange}
+        />
         <label htmlFor="gridsize-slider">Grid size:</label>
         <input
           id="gridsize-slider"
