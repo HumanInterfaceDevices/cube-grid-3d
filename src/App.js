@@ -231,8 +231,11 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
         break;
     }
 
-    setMaterialColor((cubeColorOn ? calculateCubeColor(newY):"red"));
-
+    const newMaterialColor = cubeColorOn ? calculateCubeColor(newY) : "red";
+    if (newMaterialColor !== materialColor) {
+      setMaterialColor(newMaterialColor);
+    }
+    
     ref.current.position.y = newY;
   });
 
@@ -369,7 +372,7 @@ const App = () => {
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
-        <color attach="background" args={["black"]} />
+        {/* <color attach="background" args={["black"]} /> */}
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
