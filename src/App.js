@@ -19,7 +19,7 @@ extend({ OrbitControls });
 
 // Numerical constants
 let numberOfDrops = 20;
-let gridsize = 50;
+let gridsize = 40;
 let margin = 0;
 let cubeColorOn = false;
 
@@ -326,19 +326,37 @@ const CameraHandler = () => {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, []);
+  });
 
   return null;
 };
 
 const App = () => {
   const [animation, setAnimation] = useState(1);
+  const [gridsize, setGridsize] = useState(50); // Set initial gridsize
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
   const randomOffsets = useMemo(
     () => generateRandomOffsets(gridsize),
     [gridsize]
   );
+
+  const sliderThumbStyle = {
+    appearance: "none",
+    width: "200px",
+    height: "4px",
+    background: "red",
+    cursor: "pointer",
+  };
+
+  const sliderTrackStyle = {
+    appearance: "none",
+    width: "100%",
+    height: "4px",
+    background: "red",
+    borderRadius: "3px",
+    cursor: "pointer",
+  };
 
   for (let x = 0; x < gridsize; x++) {
     for (let z = 0; z < gridsize; z++) {
@@ -354,7 +372,6 @@ const App = () => {
       );
     }
   }
-
   const onKeyDown = (event) => {
     const digit = parseInt(event.key, 10);
     if (digit >= 1 && digit <= 9) {
@@ -369,16 +386,32 @@ const App = () => {
     };
   }, []);
 
+  const handleGridSizeChange = (event) => {
+    setGridsize(parseInt(event.target.value, 10));
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
-        {/* <color attach="background" args={["black"]} /> */}
+      <color attach="background" args={["black"]} />
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
         <Controls center={center} gridsize={gridsize} />
         <CameraHandler />
       </Canvas>
+      <div className="absolute top-4 left-4">
+        <label htmlFor="gridsize-slider">Grid size:</label>
+        <input
+          id="gridsize-slider"
+          type="range"
+          min="10"
+          max="60"
+          value={gridsize}
+          style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+          onChange={handleGridSizeChange}
+        />
+      </div>
     </div>
   );
 };
