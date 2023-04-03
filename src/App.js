@@ -70,9 +70,9 @@ const generateRandomLocation = (gridsize, margin) => {
  */
 const raindrops = [];
 
-const newDropsCount = (numberOfDrops) => {
+const newDropsCount = (numDrops) => {
   raindrops.length = 0;
-  for (let i = 0; i < numberOfDrops; i++) {
+  for (let i = 0; i < numDrops; i++) {
     let location = generateRandomLocation(gridsize, margin);
     let duration = generateRandomDuration(1, 6);
     let due = timeNow() + duration;
@@ -389,7 +389,7 @@ const CameraHandler = () => {
 const App = () => {
   const [animation, setAnimation] = useState(1);
   const [sizeOfGrid, setSizeOfGrid] = useState(gridsize); // Set initial gridsize
-  const [numberOfDrops, setNumberOfDrops] = useState(1);
+  const [numDrops, setNumDrops] = useState(1);
   const cubes = [];
   const center = new Vector3((sizeOfGrid - 1) / 2, 0, (sizeOfGrid - 1) / 2);
   const randomOffsets = useMemo(
@@ -448,7 +448,8 @@ const App = () => {
   };
 
   const handleNumDropsChange = (event) => {
-    setNumberOfDrops(parseInt(event.target.value, 10));
+    numberOfDrops = parseInt(event.target.value, 10);
+    setNumDrops(numberOfDrops);
     newDropsCount(numberOfDrops);
   };
 
