@@ -32,6 +32,16 @@ code {
   margin: 1rem;
 }
 
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: red;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
 .control-box{
   display: flex;
   border: 2px red;
