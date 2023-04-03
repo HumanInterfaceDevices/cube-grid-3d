@@ -18,16 +18,14 @@ let margin = 0;
 let cubeColorOn = false;
 let numberOfDrops = 20;
 
-/**
- * Get the current time in milliseconds since the Unix epoch.
+/** Get the current time in milliseconds since the Unix epoch.
  * @returns {number} Current time in milliseconds.
  */
 const timeNow = () => {
   return Date.now();
 };
 
-/**
- * Generate a 2D array of random offsets for a grid of given size.
+/** Generate a 2D array of random offsets for a grid of given size.
  * @param {number} gridsize - The size of the grid.
  * @returns {Array<Array<number>>} 2D array of random offsets.
  */
@@ -42,8 +40,7 @@ const generateRandomOffsets = (gridsize) => {
   return offsets;
 };
 
-/**
- * Generate a random duration within a specified range.
+/** Generate a random duration within a specified range.
  * @param {number} minDuration - The minimum duration.
  * @param {number} maxDuration - The maximum duration.
  * @returns {number} A random duration between minDuration and maxDuration.
@@ -53,8 +50,7 @@ const generateRandomDuration = (minDuration, maxDuration) => {
   return duration;
 };
 
-/**
- * Generate a random location within a grid.
+/** Generate a random location within a grid.
  * @param {number} gridsize - The size of the grid.
  * @param {number} margin - The margin around the grid.
  * @returns {Vector3} A Vector3 representing the random location.
@@ -65,11 +61,9 @@ const generateRandomLocation = (gridsize, margin) => {
   return new Vector3(x, 0, z);
 };
 
-/**
- * Generate raindrops with random locations and durations.
- */
 const raindrops = [];
-
+/** Generate raindrops with random locations and durations.
+ */
 const newDropsCount = (numDrops) => {
   raindrops.length = 0;
   for (let i = 0; i < numDrops; i++) {
@@ -84,11 +78,9 @@ const newDropsCount = (numDrops) => {
     });
   }
 };
-
 newDropsCount(numberOfDrops);
 
-/**
- * Calculate the color of a cube based on its height.
+/** Calculate the color of a cube based on its height.
  * @param {number} height - The height of the cube.
  * @returns {string} A string representing the color in RGB format.
  */
@@ -110,8 +102,7 @@ const calculateCubeColor = (height) => {
   return `rgb(${color.r}, ${color.g}, ${color.b})`;
 };
 
-/**
- * Animation Functions
+/** Animation Functions
  */
 const animation1 = (state, position) => {
   const time = state.clock.getElapsedTime();
@@ -221,8 +212,7 @@ const animation7 = () => {};
 const animation8 = () => {};
 const animation9 = () => {};
 
-/**
- * Cube component. Renders a cube at the given position with the specified animation.
+/** Cube component. Renders a cube at the given position with the specified animation.
  * @param {Vector3} position - The position of the cube.
  * @param {number} animation - The animation number to apply.
  * @param {number} gridsize - The size of the grid.
@@ -299,8 +289,7 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
   );
 };
 
-/**
- * Controls component. Handles camera controls.
+/** Controls component. Handles camera controls.
  * @param {Vector3} center - The center of the grid.
  * @param {number} gridsize - The size of the grid.
  * @returns {React.Element} The rendered Controls component.
@@ -331,8 +320,7 @@ const Controls = ({ center, gridsize }) => {
   return <orbitControls ref={controls} args={[camera, gl.domElement]} />;
 };
 
-/**
- * CameraHandler component. Handles camera movements via keyboard input.
+/** CameraHandler component. Handles camera movements via keyboard input.
  * @returns {React.Element} The rendered CameraHandler component.
  */
 const CameraHandler = () => {
@@ -382,8 +370,7 @@ const CameraHandler = () => {
   return null;
 };
 
-/**
- * Main App component.
+/** Main App component.
  * @returns {React.Element} The rendered App component.
  */
 const App = () => {
@@ -397,6 +384,7 @@ const App = () => {
     [sizeOfGrid]
   );
 
+  // Slider styles
   const sliderThumbStyle = {
     appearance: "none",
     width: "200px",
@@ -404,7 +392,6 @@ const App = () => {
     background: "red",
     cursor: "pointer",
   };
-
   const sliderTrackStyle = {
     appearance: "none",
     width: "100%",
@@ -414,6 +401,7 @@ const App = () => {
     cursor: "pointer",
   };
 
+  // Generate cubes
   for (let x = 0; x < gridsize; x++) {
     for (let z = 0; z < gridsize; z++) {
       const position = new Vector3(x, 0, z);
@@ -428,6 +416,8 @@ const App = () => {
       );
     }
   }
+
+  // Handle keydown events
   const onKeyDown = (event) => {
     const digit = parseInt(event.key, 10);
     if (digit >= 1 && digit <= 9) {
@@ -435,6 +425,7 @@ const App = () => {
     }
   };
 
+  // Add event listener for keydown events
   useEffect(() => {
     window.addEventListener("keydown", onKeyDown);
     return () => {
@@ -442,17 +433,20 @@ const App = () => {
     };
   }, []);
 
+  // Handle gridsize slider change
   const handleGridSizeChange = (event) => {
     gridsize = parseInt(event.target.value, 10);
     setSizeOfGrid(gridsize);
   };
 
+  // Handle number of drops slider change
   const handleNumDropsChange = (event) => {
     numberOfDrops = parseInt(event.target.value, 10);
     setNumDrops(numberOfDrops);
     newDropsCount(numberOfDrops);
   };
 
+  // Render the App
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
