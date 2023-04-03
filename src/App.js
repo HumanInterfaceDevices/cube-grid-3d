@@ -1,15 +1,22 @@
 import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, extend, useThree } from "@react-three/fiber";
-import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry,} from "three";
-import { OrbitControls,} from "three/examples/jsm/controls/OrbitControls";
+import {
+  BoxGeometry,
+  Vector3,
+  EdgesGeometry,
+  LineBasicMaterial,
+  MeshStandardMaterial,
+  BoxBufferGeometry,
+} from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 extend({ OrbitControls });
 
 // Numerical constants
-let numberOfDrops = 20;
 let gridsize = 40;
 let margin = 0;
 let cubeColorOn = false;
+let numberOfDrops = 20;
 
 /**
  * Get the current time in milliseconds since the Unix epoch.
@@ -59,20 +66,26 @@ const generateRandomLocation = (gridsize, margin) => {
 };
 
 /**
- * Generate raindrops.
+ * Generate raindrops with random locations and durations.
  */
 const raindrops = [];
-for (let i = 0; i < numberOfDrops; i++) {
-  let location = generateRandomLocation(gridsize, margin);
-  let duration = generateRandomDuration(1, 6);
-  let due = timeNow() + duration;
-  raindrops.push({
-    location,
-    duration,
-    due,
-    complete: false,
-  });
-}
+
+const newDropsCount = (numberOfDrops) => {
+  raindrops.length = 0;
+  for (let i = 0; i < numberOfDrops; i++) {
+    let location = generateRandomLocation(gridsize, margin);
+    let duration = generateRandomDuration(1, 6);
+    let due = timeNow() + duration;
+    raindrops.push({
+      location,
+      duration,
+      due,
+      complete: false,
+    });
+  }
+};
+
+newDropsCount(numberOfDrops);
 
 /**
  * Calculate the color of a cube based on its height.
@@ -210,11 +223,10 @@ const animation9 = () => {};
 
 /**
  * Cube component. Renders a cube at the given position with the specified animation.
- * @param {Object} props - The properties of the Cube component.
- * @param {Vector3} props.position - The position of the cube.
- * @param {number} props.animation - The animation number to apply.
- * @param {number} props.gridsize - The size of the grid.
- * @param {Array<Array<number>>} props.randomOffsets - 2D array of random offsets.
+ * @param {Vector3} position - The position of the cube.
+ * @param {number} animation - The animation number to apply.
+ * @param {number} gridsize - The size of the grid.
+ * @param {Array<Array<number>>} randomOffsets - 2D array of random offsets.
  * @returns {React.Element} The rendered Cube component.
  */
 const Cube = ({ position, animation, gridsize, randomOffsets }) => {
@@ -289,9 +301,8 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
 
 /**
  * Controls component. Handles camera controls.
- * @param {Object} props - The properties of the Controls component.
- * @param {Vector3} props.center - The center of the grid.
- * @param {number} props.gridsize - The size of the grid.
+ * @param {Vector3} center - The center of the grid.
+ * @param {number} gridsize - The size of the grid.
  * @returns {React.Element} The rendered Controls component.
  */
 const Controls = ({ center, gridsize }) => {
@@ -299,9 +310,17 @@ const Controls = ({ center, gridsize }) => {
   const controls = useRef(); // Store controls in a ref so that they aren't recreated on every render
 
   useEffect(() => {
-    camera.position.set(center.x + Math.sqrt(gridsize), center.y + Math.sqrt(gridsize) * 2, center.z + Math.sqrt(gridsize));
+    camera.position.set(
+      center.x + Math.sqrt(gridsize),
+      center.y + Math.sqrt(gridsize) * 2,
+      center.z + Math.sqrt(gridsize)
+    );
     camera.rotation.x = -Math.PI / 4;
-    controls.current.target.set(center.x, center.y - Math.sqrt(gridsize) * 3, center.z);
+    controls.current.target.set(
+      center.x,
+      center.y - Math.sqrt(gridsize) * 3,
+      center.z
+    );
   }, [camera, center, gridsize]);
 
   useEffect(() => {
@@ -369,12 +388,13 @@ const CameraHandler = () => {
  */
 const App = () => {
   const [animation, setAnimation] = useState(1);
-  const [gridsize, setGridsize] = useState(50); // Set initial gridsize
+  const [sizeOfGrid, setSizeOfGrid] = useState(gridsize); // Set initial gridsize
+  const [numberOfDrops, setNumberOfDrops] = useState(1);
   const cubes = [];
-  const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
+  const center = new Vector3((sizeOfGrid - 1) / 2, 0, (sizeOfGrid - 1) / 2);
   const randomOffsets = useMemo(
-    () => generateRandomOffsets(gridsize),
-    [gridsize]
+    () => generateRandomOffsets(sizeOfGrid),
+    [sizeOfGrid]
   );
 
   const sliderThumbStyle = {
@@ -423,7 +443,13 @@ const App = () => {
   }, []);
 
   const handleGridSizeChange = (event) => {
-    setGridsize(parseInt(event.target.value, 10));
+    gridsize = parseInt(event.target.value, 10);
+    setSizeOfGrid(gridsize);
+  };
+
+  const handleNumDropsChange = (event) => {
+    setNumberOfDrops(parseInt(event.target.value, 10));
+    newDropsCount(numberOfDrops);
   };
 
   return (
@@ -433,30 +459,40 @@ const App = () => {
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
-        <Controls center={center} gridsize={gridsize} />
+        <Controls center={center} gridsize={sizeOfGrid} />
         <CameraHandler />
       </Canvas>
-      <div className="absolute top-4 left-4">
-      <label htmlFor="gridsize-slider">Grid size:</label>
-        <input
-          id="gridsize-slider"
-          type="range"
-          min="10"
-          max="60"
-          value={gridsize}
-          style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-          onChange={handleGridSizeChange}
-        />
-        <label htmlFor="gridsize-slider">Grid size:</label>
-        <input
-          id="gridsize-slider"
-          type="range"
-          min="10"
-          max="60"
-          value={gridsize}
-          style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-          onChange={handleGridSizeChange}
-        />
+      <div className="slider-row absolute top-4 left-4">
+        <div className="control-box">
+          <label className="slider" htmlFor="gridsize-slider">
+            Grid size:
+          </label>
+          <input
+            className="slider"
+            id="gridsize-slider"
+            type="range"
+            min="10"
+            max="60"
+            value={gridsize}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleGridSizeChange}
+          />
+        </div>
+        <div className="control-box">
+          <label className="slider" htmlFor="num-of-drops-slider">
+            Number of Drops:
+          </label>
+          <input
+            className="slider"
+            id="num-of-drops-slider"
+            type="range"
+            min="1"
+            max="40"
+            value={numberOfDrops}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleNumDropsChange}
+          />
+        </div>
       </div>
     </div>
   );
