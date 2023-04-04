@@ -320,7 +320,8 @@ const Controls = ({ center, gridsize }) => {
 const App = () => {
   const [animation, setAnimation] = useState(1);
   const [sizeOfGrid, setSizeOfGrid] = useState(gridsize); // Set initial gridsize
-  const [numDrops, setNumDrops] = useState(1);
+  const [numDrops, setNumDrops] = useState(10);
+  
   const cubes = [];
   const center = new Vector3((sizeOfGrid - 1) / 2, 0, (sizeOfGrid - 1) / 2);
   const randomOffsets = useMemo(
@@ -361,26 +362,15 @@ const App = () => {
     }
   }
 
-  // Handle keydown events
-  const onKeyDown = (event) => {
-    const digit = parseInt(event.key, 10);
-    if (digit >= 1 && digit <= 9) {
-      setAnimation(digit);
-    }
-  };
-
-  // Add event listener for keydown events
-  useEffect(() => {
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, []);
-
   // Handle gridsize slider change
   const handleGridSizeChange = (event) => {
     gridsize = parseInt(event.target.value, 10);
     setSizeOfGrid(gridsize);
+  };
+
+  // Handle animation slider change
+  const handleAnimationChange = (event) => {
+    setAnimation(parseInt(event.target.value, 10));
   };
 
   // Handle number of drops slider change
@@ -418,7 +408,7 @@ const App = () => {
         </div>
         <div className="control-box">
           <label className="slider" htmlFor="num-of-drops-slider">
-            Number of Drops:
+            Number of drops:
           </label>
           <input
             className="slider"
@@ -429,6 +419,21 @@ const App = () => {
             value={numberOfDrops}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
             onChange={handleNumDropsChange}
+          />
+        </div>
+        <div className="control-box">
+          <label className="slider" htmlFor="animation-slider">
+            Animation:
+          </label>
+          <input
+            className="slider"
+            id="animation-slider"
+            type="range"
+            min="1"
+            max="4"
+            value={animation}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleAnimationChange}
           />
         </div>
       </div>
