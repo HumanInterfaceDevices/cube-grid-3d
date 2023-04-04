@@ -8,7 +8,7 @@ import {
   MeshStandardMaterial,
   BoxBufferGeometry,
 } from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "@react-three/drei";
 
 extend({ OrbitControls });
 
@@ -301,73 +301,17 @@ const Controls = ({ center, gridsize }) => {
   useEffect(() => {
     camera.position.set(
       center.x + Math.sqrt(gridsize),
-      center.y + Math.sqrt(gridsize) * 2,
+      center.y + gridsize,
       center.z + Math.sqrt(gridsize)
     );
-    camera.rotation.x = -Math.PI / 4;
-    controls.current.target.set(
+    camera.lookAt(
       center.x,
-      center.y - Math.sqrt(gridsize) * 3,
+      center.y,
       center.z
     );
-  }, [camera, center, gridsize]);
+  }, [camera, center]);
 
-  useEffect(() => {
-    controls.current.addEventListener("change", gl.forceRender);
-    return () => controls.current.removeEventListener("change", gl.forceRender);
-  }, [gl]);
-
-  return <orbitControls ref={controls} args={[camera, gl.domElement]} />;
-};
-
-/** CameraHandler component. Handles camera movements via keyboard input.
- * @returns {React.Element} The rendered CameraHandler component.
- */
-const CameraHandler = () => {
-  const { camera } = useThree();
-
-  const onKeyDown = (event) => {
-    const moveSpeed = 0.1;
-    const rotationSpeed = 0.025;
-
-    switch (event.code) {
-      case "ArrowUp":
-        camera.translateZ(-moveSpeed);
-        break;
-      case "ArrowDown":
-        camera.translateZ(moveSpeed);
-        break;
-      case "ArrowLeft":
-        camera.translateX(-moveSpeed);
-        break;
-      case "ArrowRight":
-        camera.translateX(moveSpeed);
-        break;
-      case "KeyW":
-        camera.rotateX(rotationSpeed);
-        break;
-      case "KeyA":
-        camera.rotateY(rotationSpeed);
-        break;
-      case "KeyS":
-        camera.rotateX(-rotationSpeed);
-        break;
-      case "KeyD":
-        camera.rotateY(-rotationSpeed);
-        break;
-      default:
-        break;
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  });
-
-  return null;
+  return <OrbitControls camera={camera} />;
 };
 
 /** Main App component.
@@ -450,12 +394,11 @@ const App = () => {
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
-        <color attach="background" args={["black"]} />
+        {/* <color attach="background" args={["black"]} /> */}
         <ambientLight />
         <pointLight position={[10, 20, 20]} />
         <React.Fragment>{cubes}</React.Fragment>
         <Controls center={center} gridsize={sizeOfGrid} />
-        <CameraHandler />
       </Canvas>
       <div className="slider-row absolute top-4 left-4">
         <div className="control-box">
