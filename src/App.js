@@ -90,6 +90,7 @@ const calculateCubeColor = (height, cubeColor) => {
   const color2 = { r: 255, g: 0, b: 0 }; // Red - Neutral
   const color3 = { r: 0, g: 255, b: 0 }; // Green - Highest
   const colorThreshold = { r: 255, g: 255, b: 255}; // White - Threshold
+  const colorBase = { r: 255, g: 0, b: 0 }; // Red - Base
   let color;
 
   // Calculate extreme negatives first
@@ -101,16 +102,16 @@ const calculateCubeColor = (height, cubeColor) => {
     // Calculate the negative middle range
   } else if (height < 0) {
     const t = (height + threshold) / (threshold * 2); // Map the height to a decimal percentage
-    const r = Math.floor(color1.r * (cubeColor / 100) * (1 - t) + color2.r * t); // Interpolate the values between the colors
-    const g = Math.floor(color1.g * (cubeColor / 100) * (1 - t) + color2.g * t);
-    const b = Math.floor(color1.b * (cubeColor / 100) * (1 - t) + color2.b * t);
+    const r = Math.floor(colorBase.r * (1 - (cubeColor / 100)) + Math.floor(color1.r* (1 - t) + color2.r * t) * (cubeColor / 100)); // Interpolate the values between the colors
+    const g = Math.floor(colorBase.g * (1 - (cubeColor / 100)) + Math.floor(color1.g* (1 - t) + color2.g * t) * (cubeColor / 100));
+    const b = Math.floor(colorBase.b * (1 - (cubeColor / 100)) + Math.floor(color1.b* (1 - t) + color2.b * t) * (cubeColor / 100));
     color = { r, g, b };
     // Calculate the positive middle range
   } else if (height > 0) {
     const t = (height + threshold) / (threshold * 2);
-    const r = Math.floor(color2.r * (1 - t * (cubeColor / 100)) + color3.r * (cubeColor / 100) * t);
-    const g = Math.floor(color2.g * (1 - t * (cubeColor / 100)) + color3.g * (cubeColor / 100) * t);
-    const b = Math.floor(color2.b * (1 - t * (cubeColor / 100)) + color3.b * (cubeColor / 100) * t);
+    const r = Math.floor(colorBase.r * (1 - (cubeColor / 100)) + Math.floor(color2.r* (1 - t) + color3.r * t) * (cubeColor / 100)); // Interpolate the values between the colors
+    const g = Math.floor(colorBase.g * (1 - (cubeColor / 100)) + Math.floor(color2.g* (1 - t) + color3.g * t) * (cubeColor / 100));
+    const b = Math.floor(colorBase.b * (1 - (cubeColor / 100)) + Math.floor(color2.b* (1 - t) + color3.b * t) * (cubeColor / 100));
     color = { r, g, b };
     // If the height is 0, use color2
   } else color = color2;
