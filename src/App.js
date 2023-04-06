@@ -63,19 +63,20 @@ const raindrops = [];
  */
 const newDropsCount = (numDrops) => {
   if (numDrops < raindrops.length) {
-  raindrops.length = parseInt(numDrops);}
-  else {
-  for (let i = 0; i < numDrops; i++) {
-    let location = generateRandomLocation(gridsize, margin);
-    let duration = generateRandomDuration(1, 6);
-    let due = timeNow() + duration;
-    raindrops.push({
-      location,
-      duration,
-      due,
-      complete: false,
-    });
-  }}
+    raindrops.length = parseInt(numDrops);
+  } else {
+    for (let i = 0; i < numDrops; i++) {
+      let location = generateRandomLocation(gridsize, margin);
+      let duration = generateRandomDuration(1, 6);
+      let due = timeNow() + duration;
+      raindrops.push({
+        location,
+        duration,
+        due,
+        complete: false,
+      });
+    }
+  }
 };
 newDropsCount(numberOfDrops);
 
@@ -84,34 +85,34 @@ newDropsCount(numberOfDrops);
  * @returns {string} A string representing the color in RGB format.
  */
 const calculateCubeColor = (height, cubeColor) => {
-  const threshold = 1;
+  const threshold = 2;
   const color1 = { r: 0, g: 0, b: 255 }; // Blue - Lowest
   const color2 = { r: 255, g: 0, b: 0 }; // Red - Neutral
   const color3 = { r: 0, g: 255, b: 0 }; // Green - Highest
-
+  const colorThreshold = { r: 255, g: 255, b: 255}; // White - Threshold
   let color;
 
   // Calculate extreme negatives first
   if (height < -threshold) {
-    color = color1;
-  // Calculate extreme positives next
+    color = colorThreshold;
+    // Calculate extreme positives next
   } else if (height > threshold) {
-    color = color3;
-  // Calculate the negative middle range
+    color = colorThreshold;
+    // Calculate the negative middle range
   } else if (height < 0) {
     const t = (height + threshold) / (threshold * 2); // Map the height to a decimal percentage
-    const r = Math.floor((color1.r * (1 - t) + color2.r * t) * (cubeColor/100)); // Interpolate the values between the colors
-    const g = Math.floor((color1.g * (1 - t) + color2.g * t) * (cubeColor/100));
-    const b = Math.floor((color1.b * (1 - t) + color2.b * t) * (cubeColor/100));
+    const r = Math.floor(color1.r * (cubeColor / 100) * (1 - t) + color2.r * t); // Interpolate the values between the colors
+    const g = Math.floor(color1.g * (cubeColor / 100) * (1 - t) + color2.g * t);
+    const b = Math.floor(color1.b * (cubeColor / 100) * (1 - t) + color2.b * t);
     color = { r, g, b };
-  // Calculate the positive middle range
+    // Calculate the positive middle range
   } else if (height > 0) {
     const t = (height + threshold) / (threshold * 2);
-    const r = Math.floor(color2.r * (1 - t) + color3.r * t);
-    const g = Math.floor(color2.g * (1 - t) + color3.g * t);
-    const b = Math.floor(color2.b * (1 - t) + color3.b * t);
+    const r = Math.floor(color2.r * (1 - t * (cubeColor / 100)) + color3.r * (cubeColor / 100) * t);
+    const g = Math.floor(color2.g * (1 - t * (cubeColor / 100)) + color3.g * (cubeColor / 100) * t);
+    const b = Math.floor(color2.b * (1 - t * (cubeColor / 100)) + color3.b * (cubeColor / 100) * t);
     color = { r, g, b };
-  // If the height is 0, use color2
+    // If the height is 0, use color2
   } else color = color2;
 
   return `rgb(${color.r}, ${color.g}, ${color.b})`;
@@ -214,7 +215,6 @@ const animation4 = (state, position, raindrops) => {
         adjustedTime *
         intensity;
     }
-
   });
 
   const scaledHeight = height * heightMultiplier;
@@ -270,7 +270,9 @@ const Cube = ({ position, animation, gridsize, randomOffsets, cubeColor }) => {
         break;
     }
 
-    const newMaterialColor = cubeColorOn ? calculateCubeColor(newY,cubeColor) : "red";
+    const newMaterialColor = cubeColorOn
+      ? calculateCubeColor(newY, cubeColor)
+      : "red";
     if (newMaterialColor !== materialColor) {
       setMaterialColor(newMaterialColor);
     }
@@ -316,15 +318,11 @@ const Controls = ({ center, gridsize }) => {
 
   useEffect(() => {
     camera.position.set(
-      center.x + (gridsize/3),
+      center.x + gridsize / 3,
       center.y + gridsize,
-      center.z + (gridsize/3)
+      center.z + gridsize / 3
     );
-    camera.lookAt(
-      center.x,
-      center.y,
-      center.z
-    );
+    camera.lookAt(center.x, center.y, center.z);
   }, [camera, center, gridsize]);
 
   return <OrbitControls camera={camera} />;
@@ -338,7 +336,7 @@ const App = () => {
   const [sizeOfGrid, setSizeOfGrid] = useState(gridsize); // Set initial gridsize
   const [cubeColor, setCubeColor] = useState(0); // Set initial cube color
   const [numDrops, setNumDrops] = useState(numberOfDrops); // Set initial number of raindrops
-  
+
   const cubes = [];
   const center = new Vector3((sizeOfGrid - 1) / 2, 0, (sizeOfGrid - 1) / 2);
   const randomOffsets = useMemo(
@@ -414,7 +412,7 @@ const App = () => {
       </Canvas>
       <div className="slider-row absolute top-4 left-4">
         <div className="control-box">
-        <label className="slider" htmlFor="color-slider">
+          <label className="slider" htmlFor="color-slider">
             Color:
           </label>
           <input
