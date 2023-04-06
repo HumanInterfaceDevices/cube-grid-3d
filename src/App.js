@@ -9,21 +9,18 @@ import {
   BoxBufferGeometry,
 } from "three";
 import { OrbitControls } from "@react-three/drei";
-
 extend({ OrbitControls });
 
-// Numerical constants
-let gridsize = 40;
+// Variables - their existence here means I didn't build my functions to be flexible - these should all be passed from App()
+let gridsize = 10;
 let margin = 0;
-let cubeColorOn = false;
+let cubeColorOn = true;
 let numberOfDrops = 20;
 
 /** Get the current time in milliseconds since the Unix epoch.
  * @returns {number} Current time in milliseconds.
  */
-const timeNow = () => {
-  return Date.now();
-};
+const timeNow = () => Date.now();
 
 /** Generate a 2D array of random offsets for a grid of given size.
  * @param {number} gridsize - The size of the grid.
@@ -65,7 +62,9 @@ const raindrops = [];
 /** Generate raindrops with random locations and durations.
  */
 const newDropsCount = (numDrops) => {
-  raindrops.length = 0;
+  if (numDrops < raindrops.length) {
+  raindrops.length = parseInt(numDrops);}
+  else {
   for (let i = 0; i < numDrops; i++) {
     let location = generateRandomLocation(gridsize, margin);
     let duration = generateRandomDuration(1, 6);
@@ -76,7 +75,7 @@ const newDropsCount = (numDrops) => {
       due,
       complete: false,
     });
-  }
+  }}
 };
 newDropsCount(numberOfDrops);
 
@@ -84,20 +83,36 @@ newDropsCount(numberOfDrops);
  * @param {number} height - The height of the cube.
  * @returns {string} A string representing the color in RGB format.
  */
-const calculateCubeColor = (height) => {
-  const colorNegative = { r: 0, g: 0, b: 255 }; // Blue for negative heights
-  const colorZero = { r: 0, g: 255, b: 0 }; // Green for zero height
-  const colorPositive = { r: 255, g: 0, b: 0 }; // Red for positive heights
+const calculateCubeColor = (height, cubeColor) => {
+  const threshold = 1;
+  const color1 = { r: 0, g: 0, b: 255 }; // Blue - Lowest
+  const color2 = { r: 255, g: 0, b: 0 }; // Red - Neutral
+  const color3 = { r: 0, g: 255, b: 0 }; // Green - Highest
 
   let color;
 
-  if (height < -0.01) {
-    color = colorNegative;
-  } else if (height > 0.01) {
-    color = colorPositive;
-  } else {
-    color = colorZero;
-  }
+  // Calculate extreme negatives first
+  if (height < -threshold) {
+    color = color1;
+  // Calculate extreme positives next
+  } else if (height > threshold) {
+    color = color3;
+  // Calculate the negative middle range
+  } else if (height < 0) {
+    const t = (height + threshold) / (threshold * 2); // Map the height to a decimal percentage
+    const r = Math.floor((color1.r * (1 - t) + color2.r * t) * (cubeColor/100)); // Interpolate the values between the colors
+    const g = Math.floor((color1.g * (1 - t) + color2.g * t) * (cubeColor/100));
+    const b = Math.floor((color1.b * (1 - t) + color2.b * t) * (cubeColor/100));
+    color = { r, g, b };
+  // Calculate the positive middle range
+  } else if (height > 0) {
+    const t = (height + threshold) / (threshold * 2);
+    const r = Math.floor(color2.r * (1 - t) + color3.r * t);
+    const g = Math.floor(color2.g * (1 - t) + color3.g * t);
+    const b = Math.floor(color2.b * (1 - t) + color3.b * t);
+    color = { r, g, b };
+  // If the height is 0, use color2
+  } else color = color2;
 
   return `rgb(${color.r}, ${color.g}, ${color.b})`;
 };
@@ -158,7 +173,7 @@ const animation4 = (state, position, raindrops) => {
   const waveSpeed = 12.0;
   const rippleRadius = 4;
   const heightMultiplier = 2; // Start at twice the height
-  const timeDecayFactor = 2.0; // Controls how quickly ripples get shorter
+  const timeDecayFactor = 1.0; // Controls how quickly ripples get shorter
 
   let height = 0;
 
@@ -167,7 +182,11 @@ const animation4 = (state, position, raindrops) => {
 
     // Create adjustedTime to control how long until the ripples disappear
     const adjustedTime =
-      ((raindrop.due - 0.5 - timeNow()) * timeDecayFactor) / 4000;
+      ((raindrop.due - 0.5 - timeNow()) * timeDecayFactor) / 2000;
+
+    if (timeNow() >= raindrop.due) {
+      raindrop.complete = true;
+    }
 
     if (complete) {
       location = generateRandomLocation(gridsize, margin);
@@ -196,9 +215,6 @@ const animation4 = (state, position, raindrops) => {
         intensity;
     }
 
-    if (timeNow() >= raindrop.due) {
-      raindrop.complete = true;
-    }
   });
 
   const scaledHeight = height * heightMultiplier;
@@ -219,7 +235,7 @@ const animation9 = () => {};
  * @param {Array<Array<number>>} randomOffsets - 2D array of random offsets.
  * @returns {React.Element} The rendered Cube component.
  */
-const Cube = ({ position, animation, gridsize, randomOffsets }) => {
+const Cube = ({ position, animation, gridsize, randomOffsets, cubeColor }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
 
@@ -254,7 +270,7 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
         break;
     }
 
-    const newMaterialColor = cubeColorOn ? calculateCubeColor(newY) : "red";
+    const newMaterialColor = cubeColorOn ? calculateCubeColor(newY,cubeColor) : "red";
     if (newMaterialColor !== materialColor) {
       setMaterialColor(newMaterialColor);
     }
@@ -292,7 +308,7 @@ const Cube = ({ position, animation, gridsize, randomOffsets }) => {
 /** Controls component. Handles camera controls.
  * @param {Vector3} center - The center of the grid.
  * @param {number} gridsize - The size of the grid.
- * @returns {React.Element} The rendered Controls component.
+ * @returns {React.Element} The rendered camera.
  */
 const Controls = ({ center, gridsize }) => {
   const { camera, gl } = useThree();
@@ -300,16 +316,16 @@ const Controls = ({ center, gridsize }) => {
 
   useEffect(() => {
     camera.position.set(
-      center.x + Math.sqrt(gridsize),
+      center.x + (gridsize/3),
       center.y + gridsize,
-      center.z + Math.sqrt(gridsize)
+      center.z + (gridsize/3)
     );
     camera.lookAt(
       center.x,
       center.y,
       center.z
     );
-  }, [camera, center]);
+  }, [camera, center, gridsize]);
 
   return <OrbitControls camera={camera} />;
 };
@@ -318,9 +334,10 @@ const Controls = ({ center, gridsize }) => {
  * @returns {React.Element} The rendered App component.
  */
 const App = () => {
-  const [animation, setAnimation] = useState(1);
+  const [animation, setAnimation] = useState(1); // Set initial animation
   const [sizeOfGrid, setSizeOfGrid] = useState(gridsize); // Set initial gridsize
-  const [numDrops, setNumDrops] = useState(10);
+  const [cubeColor, setCubeColor] = useState(0); // Set initial cube color
+  const [numDrops, setNumDrops] = useState(numberOfDrops); // Set initial number of raindrops
   
   const cubes = [];
   const center = new Vector3((sizeOfGrid - 1) / 2, 0, (sizeOfGrid - 1) / 2);
@@ -357,6 +374,7 @@ const App = () => {
           animation={animation}
           gridsize={gridsize}
           randomOffsets={randomOffsets}
+          cubeColor={cubeColor}
         />
       );
     }
@@ -366,6 +384,10 @@ const App = () => {
   const handleGridSizeChange = (event) => {
     gridsize = parseInt(event.target.value, 10);
     setSizeOfGrid(gridsize);
+  };
+
+  const handleColorChange = (event) => {
+    setCubeColor(parseInt(event.target.value, 10));
   };
 
   // Handle animation slider change
@@ -391,6 +413,21 @@ const App = () => {
         <Controls center={center} gridsize={sizeOfGrid} />
       </Canvas>
       <div className="slider-row absolute top-4 left-4">
+        <div className="control-box">
+        <label className="slider" htmlFor="color-slider">
+            Color:
+          </label>
+          <input
+            className="slider"
+            id="color-slider"
+            type="range"
+            min="0"
+            max="100"
+            value={cubeColor}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleColorChange}
+          />
+        </div>
         <div className="control-box">
           <label className="slider" htmlFor="gridsize-slider">
             Grid size:
