@@ -10,6 +10,7 @@ import {
   BoxBufferGeometry,
   MeshBasicMaterial,
 } from "three";
+import useCubeColor from "./useCubeColor";
 import { OrbitControls } from "@react-three/drei";
 extend({ OrbitControls });
 
@@ -76,65 +77,6 @@ const newDropsCount = (numDrops, gridsize, margin) => {
       });
     }
   }
-};
-
-/** Calculate the color of a cube based on its height.
- * @param {number} height - The height of the cube.
- * @param {number} colorPercent - How much color is applied to the cube.
- * @returns {string} A string representing the color in RGB format.
- */
-const calculateCubeColor = (height, colorPercent) => {
-  const threshold = 2;
-  const color1 = { r: 0, g: 0, b: 255 }; // Blue - Lowest
-  const color2 = { r: 255, g: 0, b: 0 }; // Red - Neutral
-  const color3 = { r: 0, g: 255, b: 0 }; // Green - Highest
-  const colorThreshold = { r: 255, g: 255, b: 255 }; // White - Threshold
-  const colorBase = { r: 255, g: 0, b: 0 }; // Red - Base
-  let color;
-
-  // Calculate extreme negatives first
-  if (height < -threshold) {
-    color = colorThreshold;
-    // Calculate extreme positives next
-  } else if (height > threshold) {
-    color = colorThreshold;
-    // Calculate the negative middle range
-  } else if (height < 0) {
-    const t = 1- Math.abs(height / threshold);
-    const r = Math.floor(
-      colorBase.r * (1 - colorPercent / 100) +
-        (color1.r * (1 - t) + color2.r * t) * (colorPercent / 100)
-    );
-    // Interpolate the values between the colors
-    const g = Math.floor(
-      colorBase.g * (1 - colorPercent / 100) +
-        (color1.g * (1 - t) + color2.g * t) * (colorPercent / 100)
-    );
-    const b = Math.floor(
-      colorBase.b * (1 - colorPercent / 100) +
-        (color1.b * (1 - t) + color2.b * t) * (colorPercent / 100)
-    );
-    color = { r, g, b };
-    // Calculate the positive middle range
-  } else if (height > 0) {
-    const t = Math.abs(height / threshold);
-    const r = Math.floor(
-      colorBase.r * (1 - colorPercent / 100) +
-        (color2.r * (1 - t) + color3.r * t) * (colorPercent / 100)
-    ); // Interpolate the values between the colors
-    const g = Math.floor(
-      colorBase.g * (1 - colorPercent / 100) +
-        (color2.g * (1 - t) + color3.g * t) * (colorPercent / 100)
-    );
-    const b = Math.floor(
-      colorBase.b * (1 - colorPercent / 100) +
-        (color2.b * (1 - t) + color3.b * t) * (colorPercent / 100)
-    );
-    color = { r, g, b };
-    // If the height is 0, use color2
-  } else color = color2;
-
-  return `rgb(${color.r}, ${color.g}, ${color.b})`;
 };
 
 /** Animation Functions
@@ -270,6 +212,7 @@ const Cube = ({
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
   const [prevIsSolid, setPrevIsSolid] = useState(isSolid);
+  const {calculateCubeColor} = useCubeColor();
 
   const centeredPosition = useMemo(
     () =>
