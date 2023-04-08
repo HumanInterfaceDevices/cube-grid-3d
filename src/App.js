@@ -100,7 +100,7 @@ const calculateCubeColor = (height, colorPercent) => {
     color = colorThreshold;
     // Calculate the negative middle range
   } else if (height < 0) {
-    const t = (height + threshold) / (threshold * 2); // Map the height to a decimal percentage
+    const t = 1- Math.abs(height / threshold);
     const r = Math.floor(
       colorBase.r * (1 - colorPercent / 100) +
         (color1.r * (1 - t) + color2.r * t) * (colorPercent / 100)
@@ -117,7 +117,7 @@ const calculateCubeColor = (height, colorPercent) => {
     color = { r, g, b };
     // Calculate the positive middle range
   } else if (height > 0) {
-    const t = (height + threshold) / (threshold * 2);
+    const t = Math.abs(height / threshold);
     const r = Math.floor(
       colorBase.r * (1 - colorPercent / 100) +
         (color2.r * (1 - t) + color3.r * t) * (colorPercent / 100)
@@ -146,9 +146,9 @@ const animation1 = (state, position) => {
   const waveSpeed = 2.0;
 
   return (
-    (Math.sin(time * waveSpeed + delayX) +
+    ((Math.sin(time * waveSpeed + delayX) +
       Math.sin(time * waveSpeed + delayZ)) *
-    0.15
+    0.15)*4
   );
 };
 
@@ -168,7 +168,7 @@ const animation2 = (state, position, gridsize, margin) => {
     Math.sin(time * waveSpeed - phaseOffset) *
     Math.max(0, 1 - distance * decayFactor);
 
-  return height;
+  return height * 1.5;
 };
 
 const animation3 = (state, position, randomOffsets) => {
@@ -191,7 +191,7 @@ const animation4 = (state, position, gridsize, margin, raindrops) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 12.0;
   const rippleRadius = 4;
-  const heightMultiplier = 2; // Start at twice the height
+  const heightMultiplier = 1; // Start at twice the height
   const timeDecayFactor = 1.0; // Controls how quickly ripples get shorter
 
   let height = 0;
@@ -368,7 +368,7 @@ const Controls = ({ center, gridsize }) => {
       center.z + gridsize / 3
     );
     camera.lookAt(center.x, center.y, center.z);
-  }, []); // Empty dependency array to run this effect only on initial mount
+  }, [gridsize]); // Empty dependency array to run this effect only on initial mount
 
   return <OrbitControls camera={camera} />;
 };
