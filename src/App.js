@@ -88,9 +88,10 @@ const animation1 = (state, position) => {
   const waveSpeed = 2.0;
 
   return (
-    ((Math.sin(time * waveSpeed + delayX) +
+    (Math.sin(time * waveSpeed + delayX) +
       Math.sin(time * waveSpeed + delayZ)) *
-    0.15)*4
+    0.15 *
+    4
   );
 };
 
@@ -117,7 +118,7 @@ const animation3 = (state, position, randomOffsets) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 12.0;
   const raindropSize = 1.0;
-  const raindropIntensity = 0.3;
+  const raindropIntensity = 1;
 
   const offsetX = randomOffsets[position.x][position.z];
 
@@ -212,7 +213,7 @@ const Cube = ({
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
   const [prevIsSolid, setPrevIsSolid] = useState(isSolid);
-  const {calculateCubeColor} = useCubeColor();
+  const { calculateCubeColor } = useCubeColor();
 
   const centeredPosition = useMemo(
     () =>
@@ -243,6 +244,8 @@ const Cube = ({
     [materialColor]
   );
 
+  const boxGeometry = useMemo(() => new BoxBufferGeometry(1, 1, 1), []);
+
   useEffect(() => {
     return () => {
       cubeMaterial.dispose();
@@ -270,7 +273,8 @@ const Cube = ({
     }
 
     const newMaterialColor = calculateCubeColor(newY, colorPercent);
-    const shouldUpdateWireframe = !UPDATE_ONLY_ANIMATED_CUBES || (UPDATE_ONLY_ANIMATED_CUBES && newY !== 0);
+    const shouldUpdateWireframe =
+      !UPDATE_ONLY_ANIMATED_CUBES || (UPDATE_ONLY_ANIMATED_CUBES && newY !== 0);
 
     if (newMaterialColor !== materialColor || prevIsSolid !== isSolid) {
       setMaterialColor(newMaterialColor);
@@ -289,7 +293,7 @@ const Cube = ({
 
   return (
     <group ref={ref} position={centeredPosition}>
-      <mesh geometry={new BoxBufferGeometry(1, 1, 1)} material={cubeMaterial} />
+      <mesh geometry={boxGeometry} material={cubeMaterial} />
       <lineSegments geometry={edges} material={edgeMaterial} />
     </group>
   );
