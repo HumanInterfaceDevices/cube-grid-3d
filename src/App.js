@@ -212,8 +212,7 @@ const Cube = ({
 }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
-  const [prevIsSolid, setPrevIsSolid] = useState(isSolid);
-  const { calculateCubeColor } = useCubeColor();
+  const { calculateCubeColor, hslToRgb } = useCubeColor();
 
   const centeredPosition = useMemo(
     () =>
@@ -244,6 +243,7 @@ const Cube = ({
     [materialColor]
   );
 
+  // This is where my memory leak was coming from. I was creating a new geometry every time the component re-rendered, strangely only when colorPercent was above 0. useMemo was the solution.
   const boxGeometry = useMemo(() => new BoxBufferGeometry(1, 1, 1), []);
 
   useEffect(() => {
@@ -276,7 +276,7 @@ const Cube = ({
     const shouldUpdateWireframe =
       !UPDATE_ONLY_ANIMATED_CUBES || (UPDATE_ONLY_ANIMATED_CUBES && newY !== 0);
 
-    if (newMaterialColor !== materialColor || prevIsSolid !== isSolid) {
+    if (newMaterialColor !== materialColor) {
       setMaterialColor(newMaterialColor);
       cubeMaterial.color.set(newMaterialColor);
       edgeMaterial.color.set(newMaterialColor);
@@ -284,8 +284,6 @@ const Cube = ({
       if (shouldUpdateWireframe) {
         cubeMaterial.wireframe = !isSolid;
       }
-
-      setPrevIsSolid(isSolid);
     }
 
     ref.current.position.y = newY;
@@ -325,18 +323,20 @@ const Controls = ({ center, gridsize }) => {
  */
 const App = () => {
   const [animation, setAnimation] = useState(1); // Set initial animation
-  const [gridsize, setGridsize] = useState(10); // Set initial gridsize
-  const [colorPercent, setColorPerent] = useState(0); // Set initial cube color
-  const [isSolid, setIsSolid] = useState(1); // Set solid or wireframe
+  const [gridsize, setGridsize] = useState(5); // Set initial gridsize
   const [margin, setMargin] = useState(0); // Set initial margin
-  const [numberOfDrops, setNumberOfDrops] = useState(1); // Set initial number of raindrops
+
+  const [colorPercent, setColorPerent] = useState(0); // Set initial cube color
+  const [hue, setHue] = useState(0); // Set initial hue for base color
+  const [saturation, setSaturation] = useState(0); // Set initial saturation for base color
+  const [lightness, setLightness] = useState(0); // Set initial lightness for base color
+  const [isSolid, setIsSolid] = useState(1); // Set solid or wireframe cubes
+  
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
-  const randomOffsets = useMemo(
-    () => generateRandomOffsets(gridsize),
-    [gridsize]
-  );
-
+  const randomOffsets = useMemo(() => generateRandomOffsets(gridsize),[gridsize]); 
+  
+  const [numberOfDrops, setNumberOfDrops] = useState(1); // Set initial number of raindrops
   newDropsCount(numberOfDrops, gridsize);
 
   // Slider styles
@@ -384,6 +384,19 @@ const App = () => {
     }
   };
 
+  // Handle hue slider change
+  const handleHueChange = (event) => {
+    setHue(parseFloat(event.target.value));
+  };
+  // Handle saturation slider change
+  const handleSaturationChange = (event) => {
+    setSaturation(parseFloat(event.target.value));
+  };
+  // Handle lightness slider change
+  const handleLightnessChange = (event) => {
+    setLightness(parseFloat(event.target.value));
+  };
+
   // Handle gridsize slider change
   const handleGridSizeChange = (event) =>
     setGridsize(parseInt(event.target.value, 10));
@@ -424,6 +437,58 @@ const App = () => {
         <Controls center={center} gridsize={gridsize} />
       </Canvas>
       <div className="slider-row absolute top-4 left-4">
+        <div className="control-box color-box-parent">
+          <div className="color-box">
+            <div className="color-box-hue">
+              <label className="slider" htmlFor="hue-slider">
+                Hue:
+              </label>
+              <input
+                className="slider"
+                id="hue-slider"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={hue}
+                style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+                onChange={handleHueChange}
+              />
+            </div>
+            <div className="color-box-saturation">
+              <label className="slider" htmlFor="saturation-slider">
+                Saturation:
+              </label>
+              <input
+                className="slider"
+                id="saturation-slider"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={saturation}
+                style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+                onChange={handleSaturationChange}
+              />
+            </div>
+            <div className="color-box-lightness">
+              <label className="slider" htmlFor="lightness-slider">
+                Lightness:
+              </label>
+              <input
+                className="slider"
+                id="lightness-slider"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={lightness}
+                style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+                onChange={handleLightnessChange}
+              />
+            </div>
+          </div>
+        </div>
         <div className="control-box solidbutton">
           <button
             className="button"
@@ -456,8 +521,8 @@ const App = () => {
             className="slider"
             id="gridsize-slider"
             type="range"
-            min="10"
-            max="60"
+            min="5"
+            max="40"
             value={gridsize}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
             onChange={handleGridSizeChange}
@@ -472,7 +537,7 @@ const App = () => {
             id="num-of-drops-slider"
             type="range"
             min="1"
-            max="40"
+            max="25"
             value={numberOfDrops}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
             onChange={handleNumDropsChange}

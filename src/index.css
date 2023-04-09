@@ -37,6 +37,40 @@ code {
   margin: 0.5rem;
 }
 
+.color-box-parent {
+  height: 95px;
+  align-items: flex-start;
+}
+
+
+.color-box {
+  height: 100%;
+  background-color: black;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-box-hue {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.color-box-saturation {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.color-box-lightness {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .solidbutton {
   background-color: red;
 }
