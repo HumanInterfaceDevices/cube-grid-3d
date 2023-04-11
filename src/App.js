@@ -211,13 +211,13 @@ const Cube = ({
   hue,
   saturation,
   lightness,
-  calculateCubeColor, 
-  hslToRgb, 
+  calculateCubeColor,
+  hslToRgb,
   setColorBase,
 }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
-  
+
   const centeredPosition = useMemo(
     () =>
       new Vector3(
@@ -328,8 +328,14 @@ const Controls = ({ center, gridsize }) => {
  * @returns {React.Element} The rendered App component.
  */
 const App = () => {
-  const {colorBase, setColorBase, calculateCubeColor, hslToRgb} = useCubeColor();
-  const [solidButtonColor, setSolidButtonColor] = useState({backgroundColor: `black`});
+  const { colorBase, setColorBase, calculateCubeColor, hslToRgb } =
+    useCubeColor();
+  const [solidButtonColor, setSolidButtonColor] = useState({
+    backgroundColor: `black`,
+  });
+  const [wireframeButtonColor, setWireframeButtonColor] = useState({
+    borderColor: `black`,
+  });
 
   const [animation, setAnimation] = useState(1); // Set initial animation
   const [gridsize, setGridsize] = useState(5); // Set initial gridsize
@@ -368,6 +374,10 @@ const App = () => {
     cursor: "pointer",
   };
 
+  useEffect(() => {
+    changeButtonColor();
+  }, [isSolid]);
+
   // Generate cubes
   for (let x = 0; x < gridsize; x++) {
     for (let z = 0; z < gridsize; z++) {
@@ -388,49 +398,51 @@ const App = () => {
           calculateCubeColor={calculateCubeColor}
           hslToRgb={hslToRgb}
           setColorBase={setColorBase}
-        
         />
       );
     }
+  }
+
+  // change button colors
+  function changeButtonColor() {
+    if (isSolid !== 0) {
+      setSolidButtonColor({ backgroundColor: `black` });
+    } else {
+      setSolidButtonColor({
+        backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+      });
+    }
+    setWireframeButtonColor({
+      borderColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+    });
   }
 
   // Handle solid button click
   const handleSolidChange = (event) => {
     if (isSolid === 0) {
       setIsSolid(1);
-      setSolidButtonColor({
-        backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
-      });
     } else {
       setIsSolid(0);
-      setSolidButtonColor({backgroundColor: `black`});
     }
   };
 
   // Handle hue slider change
   const handleHueChange = (event) => {
     setHue(parseFloat(event.target.value));
-    setSolidButtonColor({
-      backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
-    });
-
+    changeButtonColor();
   };
 
   // Handle saturation slider change
   const handleSaturationChange = (event) => {
     setSaturation(parseFloat(event.target.value));
-    setSolidButtonColor({
-      backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
-    });
-};
+    changeButtonColor();
+  };
 
   // Handle lightness slider change
   const handleLightnessChange = (event) => {
     setLightness(parseFloat(event.target.value));
-    setSolidButtonColor({
-      backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
-    });
-};
+    changeButtonColor();
+  };
 
   // Handle gridsize slider change
   const handleGridSizeChange = (event) =>
@@ -528,10 +540,13 @@ const App = () => {
             type="button"
             value={isSolid}
             onClick={handleSolidChange}
-            style={
-              { ...solidButtonColor }
-            }
-          ></button>
+            style={{ ...solidButtonColor }}
+          >
+            <div
+              className="wireframeButton"
+              style={{ ...wireframeButtonColor }}
+            ></div>
+          </button>
         </div>
         <div className="control-box">
           <label className="slider" htmlFor="color-slider">

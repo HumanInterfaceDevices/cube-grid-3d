@@ -22,7 +22,16 @@ code {
   width: 75px;
   height: 100%;
   border: 0;
-  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wireframeButton {
+  width: 90%;
+  height: 2px;
+  border-width: 2px;
+  border-radius: 3px;
 }
 
 .control-box {
@@ -41,7 +50,6 @@ code {
   height: 95px;
   align-items: flex-start;
 }
-
 
 .color-box {
   height: 100%;
@@ -69,15 +77,6 @@ code {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-}
-
-.solidbutton {
-}
-
-.button[value="1"] {
-}
-
-.button[value="0"] {
 }
 
 .slider-row {
