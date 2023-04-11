@@ -56,21 +56,21 @@ const generateRandomLocation = (gridsize, margin) => {
   return new Vector3(x, 0, z);
 };
 
-const raindrops = [];
-/** Generate raindrops with random locations and durations
- * @param {number} numDrops - The number of raindrops to generate.
+const bubbles = [];
+/** Generate bubbles with random locations and durations
+ * @param {number} numBubbles - The number of bubbles to generate.
  * @param {number} gridsize - The size of the grid.
  * @param {number} margin - The margin around the grid.
  */
-const newDropsCount = (numDrops, gridsize, margin) => {
-  if (numDrops < raindrops.length) {
-    raindrops.length = parseInt(numDrops);
+const newBubblesCount = (numBubbles, gridsize, margin) => {
+  if (numBubbles < bubbles.length) {
+    bubbles.length = parseInt(numBubbles);
   } else {
-    for (let i = 0; i < numDrops; i++) {
+    for (let i = 0; i < numBubbles; i++) {
       let location = generateRandomLocation(gridsize, margin);
       let duration = generateRandomDuration(1, 6);
       let due = timeNow() + duration;
-      raindrops.push({
+      bubbles.push({
         location,
         duration,
         due,
@@ -78,8 +78,6 @@ const newDropsCount = (numDrops, gridsize, margin) => {
       });
     }
   }
-  console.log("newDropsCount called", numDrops);
-
 };
 
 /** Animation Functions
@@ -120,20 +118,20 @@ const animation2 = (state, position, gridsize, margin) => {
 const animation3 = (state, position, randomOffsets) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 12.0;
-  const raindropSize = 1.0;
-  const raindropIntensity = 1;
+  const bubbleSize = 1.0;
+  const bubbleIntensity = 1;
 
   const offsetX = randomOffsets[position.x][position.z];
 
   const height =
     Math.sin(time * waveSpeed + offsetX) *
     Math.cos(time * waveSpeed + offsetX) *
-    raindropSize;
+    bubbleSize;
 
-  return height * raindropIntensity;
+  return height * bubbleIntensity;
 };
 
-const animation4 = (state, position, gridsize, margin, raindrops) => {
+const animation4 = (state, position, gridsize, margin, bubbles) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 12.0;
   const rippleRadius = 4;
@@ -142,26 +140,26 @@ const animation4 = (state, position, gridsize, margin, raindrops) => {
 
   let height = 0;
 
-  raindrops.forEach((raindrop) => {
-    let { location, duration, due, complete } = raindrop;
+  bubbles.forEach((bubble) => {
+    let { location, duration, due, complete } = bubble;
 
     // Create adjustedTime to control how long until the ripples disappear
     const adjustedTime =
-      ((raindrop.due - 0.5 - timeNow()) * timeDecayFactor) / 2000;
+      ((bubble.due - 0.5 - timeNow()) * timeDecayFactor) / 2000;
 
-    if (timeNow() >= raindrop.due - 50) {
-      raindrop.complete = true;
+    if (timeNow() >= bubble.due - 50) {
+      bubble.complete = true;
     }
 
     if (complete) {
       location = generateRandomLocation(gridsize, margin);
-      raindrop.location = location;
+      bubble.location = location;
       duration = generateRandomDuration(500, 4000);
-      raindrop.duration = duration;
+      bubble.duration = duration;
       due = timeNow() + duration;
-      raindrop.due = due;
+      bubble.due = due;
       complete = false;
-      raindrop.complete = complete;
+      bubble.complete = complete;
     }
 
     const intensity = (due - timeNow()) / duration;
@@ -272,7 +270,7 @@ const Cube = ({
         newY = animation3(state, position, randomOffsets);
         break;
       case 4:
-        newY = animation4(state, position, gridsize, margin, raindrops);
+        newY = animation4(state, position, gridsize, margin, bubbles);
         break;
       default:
         break;
@@ -356,11 +354,11 @@ const App = () => {
     [gridsize]
   );
 
-  const [numberOfDrops, setNumberOfDrops] = useState(1); // Set initial number of raindrops
+  const [numberOfBubbles, setNumberOfBubbles] = useState(1); // Set initial number of bubbles
   
   useEffect(() => {
-    newDropsCount(numberOfDrops, gridsize);
-  }, [numberOfDrops, gridsize]);
+    newBubblesCount(numberOfBubbles, gridsize);
+  }, [numberOfBubbles, gridsize]);
   
   // Slider styles
   const sliderThumbStyle = {
@@ -461,11 +459,10 @@ const App = () => {
   const handleAnimationChange = (event) =>
     setAnimation(parseInt(event.target.value, 10));
 
-  // Handle number of drops slider change
-  const handleNumDropsChange = (event) => {
-    setNumberOfDrops(parseInt(event.target.value, 10));
-    newDropsCount(numberOfDrops, gridsize);
-    console.log(numberOfDrops);
+  // Handle number of bubbles slider change
+  const handleNumBubblesChange = (event) => {
+    setNumberOfBubbles(parseInt(event.target.value, 10));
+    newBubblesCount(numberOfBubbles, gridsize);
   };
 
   // Background gradient rotation animation
@@ -491,19 +488,19 @@ const App = () => {
       </Canvas>
       <div className="slider-row absolute top-0">
         <div className="control-box">
-          <label className="slider" htmlFor="hue-slider">
-            Hue:
+          <label className="slider" htmlFor="lightness-slider">
+            Lightness:
           </label>
           <input
             className="slider"
-            id="hue-slider"
+            id="lightness-slider"
             type="range"
             min="0"
             max="1"
             step="0.01"
-            value={hue}
+            value={lightness}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-            onChange={handleHueChange}
+            onChange={handleLightnessChange}
           />
         </div>
         <div className="control-box">
@@ -523,19 +520,19 @@ const App = () => {
           />
         </div>
         <div className="control-box">
-          <label className="slider" htmlFor="lightness-slider">
-            Lightness:
+          <label className="slider" htmlFor="hue-slider">
+            Hue:
           </label>
           <input
             className="slider"
-            id="lightness-slider"
+            id="hue-slider"
             type="range"
             min="0"
             max="1"
             step="0.01"
-            value={lightness}
+            value={hue}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-            onChange={handleLightnessChange}
+            onChange={handleHueChange}
           />
         </div>
 
@@ -585,21 +582,6 @@ const App = () => {
           />
         </div>
         <div className="control-box">
-          <label className="slider" htmlFor="num-of-drops-slider">
-            Number of drops:
-          </label>
-          <input
-            className="slider"
-            id="num-of-drops-slider"
-            type="range"
-            min="1"
-            max="25"
-            value={numberOfDrops}
-            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-            onChange={handleNumDropsChange}
-          />
-        </div>
-        <div className="control-box">
           <label className="slider" htmlFor="animation-slider">
             Animation:
           </label>
@@ -612,6 +594,21 @@ const App = () => {
             value={animation}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
             onChange={handleAnimationChange}
+          />
+        </div>
+        <div className="control-box">
+          <label className="slider" htmlFor="num-of-bubbles-slider">
+            Bubbles:
+          </label>
+          <input
+            className="slider"
+            id="num-of-bubbles-slider"
+            type="range"
+            min="1"
+            max="25"
+            value={numberOfBubbles}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleNumBubblesChange}
           />
         </div>
       </div>
