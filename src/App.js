@@ -78,6 +78,8 @@ const newDropsCount = (numDrops, gridsize, margin) => {
       });
     }
   }
+  console.log("newDropsCount called", numDrops);
+
 };
 
 /** Animation Functions
@@ -147,7 +149,7 @@ const animation4 = (state, position, gridsize, margin, raindrops) => {
     const adjustedTime =
       ((raindrop.due - 0.5 - timeNow()) * timeDecayFactor) / 2000;
 
-    if (timeNow() >= raindrop.due) {
+    if (timeNow() >= raindrop.due - 50) {
       raindrop.complete = true;
     }
 
@@ -355,8 +357,11 @@ const App = () => {
   );
 
   const [numberOfDrops, setNumberOfDrops] = useState(1); // Set initial number of raindrops
-  newDropsCount(numberOfDrops, gridsize);
-
+  
+  useEffect(() => {
+    newDropsCount(numberOfDrops, gridsize);
+  }, [numberOfDrops, gridsize]);
+  
   // Slider styles
   const sliderThumbStyle = {
     appearance: "none",
@@ -460,6 +465,7 @@ const App = () => {
   const handleNumDropsChange = (event) => {
     setNumberOfDrops(parseInt(event.target.value, 10));
     newDropsCount(numberOfDrops, gridsize);
+    console.log(numberOfDrops);
   };
 
   // Background gradient rotation animation
