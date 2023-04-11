@@ -72,15 +72,12 @@ code {
 }
 
 .solidbutton {
-  background-color: red;
 }
 
 .button[value="1"] {
-  background-color: red;
 }
 
 .button[value="0"] {
-  background-color: black;
 }
 
 .slider-row {

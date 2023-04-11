@@ -9,6 +9,7 @@ import {
   MeshStandardMaterial,
   BoxBufferGeometry,
   MeshBasicMaterial,
+  cloneUniformsGroups,
 } from "three";
 import useCubeColor from "./useCubeColor";
 import { OrbitControls } from "@react-three/drei";
@@ -189,8 +190,6 @@ const animation7 = () => {};
 const animation8 = () => {};
 const animation9 = () => {};
 
-const UPDATE_ONLY_ANIMATED_CUBES = false;
-
 /** Cube component. Renders a cube at the given position with the specified animation.
  * @param {Vector3} position - The position of the cube.
  * @param {number} animation - The animation number to apply.
@@ -209,11 +208,16 @@ const Cube = ({
   colorPercent,
   isSolid,
   margin,
+  hue,
+  saturation,
+  lightness,
+  calculateCubeColor, 
+  hslToRgb, 
+  setColorBase,
 }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
-  const { calculateCubeColor, hslToRgb } = useCubeColor();
-
+  
   const centeredPosition = useMemo(
     () =>
       new Vector3(
@@ -272,27 +276,29 @@ const Cube = ({
         break;
     }
 
+    // Update the Base Color from the HSL sliders
+    const newColorBase = hslToRgb(hue, saturation, lightness);
+    setColorBase(newColorBase);
+
+    // Calculate the new color of the cube
     const newMaterialColor = calculateCubeColor(newY, colorPercent);
-    const shouldUpdateWireframe =
-      !UPDATE_ONLY_ANIMATED_CUBES || (UPDATE_ONLY_ANIMATED_CUBES && newY !== 0);
 
     if (newMaterialColor !== materialColor) {
       setMaterialColor(newMaterialColor);
       cubeMaterial.color.set(newMaterialColor);
       edgeMaterial.color.set(newMaterialColor);
 
-      if (shouldUpdateWireframe) {
-        cubeMaterial.wireframe = !isSolid;
-      }
+      cubeMaterial.wireframe = !isSolid;
     }
 
     ref.current.position.y = newY;
   });
 
+  // Return the cube and its edges as a group, conditionally rendering the edges
   return (
     <group ref={ref} position={centeredPosition}>
       <mesh geometry={boxGeometry} material={cubeMaterial} />
-      <lineSegments geometry={edges} material={edgeMaterial} />
+      {!isSolid && <lineSegments geometry={edges} material={edgeMaterial} />}
     </group>
   );
 };
@@ -322,6 +328,9 @@ const Controls = ({ center, gridsize }) => {
  * @returns {React.Element} The rendered App component.
  */
 const App = () => {
+  const {colorBase, setColorBase, calculateCubeColor, hslToRgb} = useCubeColor();
+  const [solidButtonColor, setSolidButtonColor] = useState({backgroundColor: `black`});
+
   const [animation, setAnimation] = useState(1); // Set initial animation
   const [gridsize, setGridsize] = useState(5); // Set initial gridsize
   const [margin, setMargin] = useState(0); // Set initial margin
@@ -331,11 +340,14 @@ const App = () => {
   const [saturation, setSaturation] = useState(0); // Set initial saturation for base color
   const [lightness, setLightness] = useState(0); // Set initial lightness for base color
   const [isSolid, setIsSolid] = useState(1); // Set solid or wireframe cubes
-  
+
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
-  const randomOffsets = useMemo(() => generateRandomOffsets(gridsize),[gridsize]); 
-  
+  const randomOffsets = useMemo(
+    () => generateRandomOffsets(gridsize),
+    [gridsize]
+  );
+
   const [numberOfDrops, setNumberOfDrops] = useState(1); // Set initial number of raindrops
   newDropsCount(numberOfDrops, gridsize);
 
@@ -370,6 +382,13 @@ const App = () => {
           colorPercent={colorPercent}
           isSolid={isSolid}
           margin={margin}
+          hue={hue}
+          saturation={saturation}
+          lightness={lightness}
+          calculateCubeColor={calculateCubeColor}
+          hslToRgb={hslToRgb}
+          setColorBase={setColorBase}
+        
         />
       );
     }
@@ -379,23 +398,39 @@ const App = () => {
   const handleSolidChange = (event) => {
     if (isSolid === 0) {
       setIsSolid(1);
+      setSolidButtonColor({
+        backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
+      });
     } else {
       setIsSolid(0);
+      setSolidButtonColor({backgroundColor: `black`});
     }
   };
 
   // Handle hue slider change
   const handleHueChange = (event) => {
     setHue(parseFloat(event.target.value));
+    setSolidButtonColor({
+      backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
+    });
+
   };
+
   // Handle saturation slider change
   const handleSaturationChange = (event) => {
     setSaturation(parseFloat(event.target.value));
-  };
+    setSolidButtonColor({
+      backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
+    });
+};
+
   // Handle lightness slider change
   const handleLightnessChange = (event) => {
     setLightness(parseFloat(event.target.value));
-  };
+    setSolidButtonColor({
+      backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
+    });
+};
 
   // Handle gridsize slider change
   const handleGridSizeChange = (event) =>
@@ -436,59 +471,56 @@ const App = () => {
         <React.Fragment>{cubes}</React.Fragment>
         <Controls center={center} gridsize={gridsize} />
       </Canvas>
-      <div className="slider-row absolute top-4 left-4">
-        <div className="control-box color-box-parent">
-          <div className="color-box">
-            <div className="color-box-hue">
-              <label className="slider" htmlFor="hue-slider">
-                Hue:
-              </label>
-              <input
-                className="slider"
-                id="hue-slider"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={hue}
-                style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-                onChange={handleHueChange}
-              />
-            </div>
-            <div className="color-box-saturation">
-              <label className="slider" htmlFor="saturation-slider">
-                Saturation:
-              </label>
-              <input
-                className="slider"
-                id="saturation-slider"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={saturation}
-                style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-                onChange={handleSaturationChange}
-              />
-            </div>
-            <div className="color-box-lightness">
-              <label className="slider" htmlFor="lightness-slider">
-                Lightness:
-              </label>
-              <input
-                className="slider"
-                id="lightness-slider"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={lightness}
-                style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-                onChange={handleLightnessChange}
-              />
-            </div>
-          </div>
+      <div className="slider-row absolute top-0">
+        <div className="control-box">
+          <label className="slider" htmlFor="hue-slider">
+            Hue:
+          </label>
+          <input
+            className="slider"
+            id="hue-slider"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={hue}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleHueChange}
+          />
         </div>
+        <div className="control-box">
+          <label className="slider" htmlFor="saturation-slider">
+            Saturation:
+          </label>
+          <input
+            className="slider"
+            id="saturation-slider"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={saturation}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleSaturationChange}
+          />
+        </div>
+        <div className="control-box">
+          <label className="slider" htmlFor="lightness-slider">
+            Lightness:
+          </label>
+          <input
+            className="slider"
+            id="lightness-slider"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={lightness}
+            style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+            onChange={handleLightnessChange}
+          />
+        </div>
+
         <div className="control-box solidbutton">
           <button
             className="button"
@@ -496,11 +528,14 @@ const App = () => {
             type="button"
             value={isSolid}
             onClick={handleSolidChange}
+            style={
+              { ...solidButtonColor }
+            }
           ></button>
         </div>
         <div className="control-box">
           <label className="slider" htmlFor="color-slider">
-            Color:
+            H Color:
           </label>
           <input
             className="slider"

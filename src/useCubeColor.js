@@ -1,18 +1,19 @@
+import { useState } from "react";
+
 const useCubeColor = () => {
   const threshold = 2;
   const color1 = { r: 0, g: 0, b: 255 }; // Blue - Lowest
   const color2 = { r: 128, g: 0, b: 0 }; // Red - Neutral
   const color3 = { r: 0, g: 255, b: 0 }; // Green - Highest
   const colorThreshold = { r: 255, g: 255, b: 255 }; // White - Threshold
-  const colorBase = { r: 64, g: 0, b: 0 }; // Red - Base
+  const [colorBase, setColorBase] = useState({ r: 64, g: 0, b: 0 }); // Red - Base
 
-
-  function hslToRgb(hue, saturation, lightness) {
+  const hslToRgb = (hue, saturation, lightness) => {
 	// Helper function to convert a hue value to its corresponding RGB value
 	function hueToRgb(pivot, interpolated, tempHue) {
-	  if (tempHue < 0) tempHue += 1;
-	  if (tempHue > 1) tempHue -= 1;
-	  if (tempHue < 1 / 6) return pivot + (interpolated - pivot) * 6 * tempHue;
+	  if (tempHue < 0) tempHue += 1; 
+	  if (tempHue > 1) tempHue -= 1; 
+	  if (tempHue < 1 / 6) return pivot + (interpolated - pivot) * 6 * tempHue; 
 	  if (tempHue < 1 / 2) return interpolated;
 	  if (tempHue < 2 / 3) return pivot + (interpolated - pivot) * (2 / 3 - tempHue) * 6;
 	  return pivot;
@@ -76,7 +77,6 @@ const useCubeColor = () => {
       );
       color = { r, g, b };
     }
-
     return `rgb(${color.r}, ${color.g}, ${color.b})`;
   };
 
@@ -87,6 +87,8 @@ const useCubeColor = () => {
     color3,
     colorThreshold,
     colorBase,
+	setColorBase,
+	hslToRgb,
   };
 };
 
