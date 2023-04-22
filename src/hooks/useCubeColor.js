@@ -9,34 +9,38 @@ const useCubeColor = () => {
   const [colorBase, setColorBase] = useState({ r: 64, g: 0, b: 0 }); // Red - Base
 
   const hslToRgb = (hue, saturation, lightness) => {
-	// Helper function to convert a hue value to its corresponding RGB value
-	function hueToRgb(pivot, interpolated, tempHue) {
-	  if (tempHue < 0) tempHue += 1; 
-	  if (tempHue > 1) tempHue -= 1; 
-	  if (tempHue < 1 / 6) return pivot + (interpolated - pivot) * 6 * tempHue; 
-	  if (tempHue < 1 / 2) return interpolated;
-	  if (tempHue < 2 / 3) return pivot + (interpolated - pivot) * (2 / 3 - tempHue) * 6;
-	  return pivot;
-	}
-  
-	let red, green, blue;
-  
-	if (saturation === 0) {
-	  red = green = blue = lightness; // achromatic (grey)
-	} else {
-	  const interpolated = lightness < 0.5 ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
-	  const pivot = 2 * lightness - interpolated;
-	  red = hueToRgb(pivot, interpolated, hue + 1 / 3);
-	  green = hueToRgb(pivot, interpolated, hue);
-	  blue = hueToRgb(pivot, interpolated, hue - 1 / 3);
-	}
-  
-	return {
-	  r: Math.round(red * 255),
-	  g: Math.round(green * 255),
-	  b: Math.round(blue * 255),
-	};
-  }
+    // Helper function to convert a hue value to its corresponding RGB value
+    function hueToRgb(pivot, interpolated, tempHue) {
+      if (tempHue < 0) tempHue += 1;
+      if (tempHue > 1) tempHue -= 1;
+      if (tempHue < 1 / 6) return pivot + (interpolated - pivot) * 6 * tempHue;
+      if (tempHue < 1 / 2) return interpolated;
+      if (tempHue < 2 / 3)
+        return pivot + (interpolated - pivot) * (2 / 3 - tempHue) * 6;
+      return pivot;
+    }
+
+    let red, green, blue;
+
+    if (saturation === 0) {
+      red = green = blue = lightness; // achromatic (grey)
+    } else {
+      const interpolated =
+        lightness < 0.5
+          ? lightness * (1 + saturation)
+          : lightness + saturation - lightness * saturation;
+      const pivot = 2 * lightness - interpolated;
+      red = hueToRgb(pivot, interpolated, hue + 1 / 3);
+      green = hueToRgb(pivot, interpolated, hue);
+      blue = hueToRgb(pivot, interpolated, hue - 1 / 3);
+    }
+
+    return {
+      r: Math.round(red * 255),
+      g: Math.round(green * 255),
+      b: Math.round(blue * 255),
+    };
+  };
 
   const calculateCubeColor = (height, colorPercent) => {
     let color;
@@ -87,8 +91,8 @@ const useCubeColor = () => {
     color3,
     colorThreshold,
     colorBase,
-	setColorBase,
-	hslToRgb,
+    setColorBase,
+    hslToRgb,
   };
 };
 
