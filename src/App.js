@@ -1,13 +1,13 @@
 import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry } from "three";
-import useCubeColor from "./hooks/useCubeColor";
 import { OrbitControls } from "@react-three/drei";
+import useCubeColor from "./hooks/useCubeColor";
 
 // Global variables - These exist because I am not handling and passing them properly yet
 const bubbles = [];
 
-// CSS styles - These exist because I have not created proper components yet
+// CSS styles - These exist because I have not created proper, independent components yet
 // Slider styles
 const sliderThumbStyle = {
   appearance: "none",
@@ -74,7 +74,7 @@ const animation1 = (state, position) => {
   const delayZ = (position.z + 2) * 0.9;
   const waveSpeed = 2.0;
 
-  return (Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ)) * 0.15 * 4;
+  return Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ);
 };
 
 const animation2 = (state, position, gridsize, margin) => {
@@ -167,7 +167,7 @@ const animation8 = () => {};
 const animation9 = () => {};
 
 /** Cube component. Renders a cube at the given position with the specified animation.
- * @param {Vector3} position - The position of the cube.
+ * @param {Vector3} position - The position of the cube in the array.
  * @param {number} animation - The animation number to apply.
  * @param {number} gridsize - The size of the grid.
  * @param {string} colorPercent - How much of the heightmap color to use.
@@ -224,7 +224,7 @@ const Cube = ({
     [materialColor]
   );
 
-  // This is where my memory leak was coming from. I was creating a new geometry every time the component re-rendered, strangely only when colorPercent was above 0. useMemo was the solution.
+  // This is where my memory leak was coming from. I was creating a new box every time the component re-rendered. If the height map color was applied and the color didn't change, the materials were never disposed. Memoizing the geometry was the solution.
   const boxGeometry = useMemo(() => new BoxBufferGeometry(1, 1, 1), []);
 
   useEffect(() => {
@@ -286,7 +286,7 @@ const Cube = ({
  * @returns {React.Element} - The rendered camera.
  */
 const Controls = ({ center, gridsize }) => {
-  const { camera, gl } = useThree();
+  const { camera } = useThree();
   const controls = useRef();
 
   // Recenter the camera if gridsize changes
@@ -295,34 +295,35 @@ const Controls = ({ center, gridsize }) => {
     camera.lookAt(center.x, center.y, center.z);
   }, [gridsize]);
 
-  return <OrbitControls camera={camera} />;
+  return <OrbitControls ref={controls} args={[camera]} />;
 };
+
 
 /** Main App component.
  * @returns {React.Element} - The rendered App component.
  */
 const App = () => {
   const { colorBase, setColorBase, calculateCubeColor, hslToRgb } = useCubeColor();
+
+  const [isSolid, setIsSolid] = useState(true); // Set solid or wireframe cubes
   const [solidButtonColor, setSolidButtonColor] = useState({ backgroundColor: `black` });
   const [wireframeButtonColor, setWireframeButtonColor] = useState({ borderColor: `black` });
 
-  const [animation, setAnimation] = useState(1); // Set initial animation
   const [gridsize, setGridsize] = useState(5); // Set initial gridsize
+  const [numberOfBubbles, setNumberOfBubbles] = useState(1); // Set initial number of bubbles
+  const [animation, setAnimation] = useState(1); // Set initial animation
   const [margin, setMargin] = useState(0); // Set initial margin
 
-  const [colorPercent, setColorPerent] = useState(0); // Set initial cube color
+  const [colorPercent, setColorPerent] = useState(0); // Set initial heightmap color percentage
   const [hue, setHue] = useState(0); // Set initial hue for base color
   const [saturation, setSaturation] = useState(0); // Set initial saturation for base color
   const [lightness, setLightness] = useState(0); // Set initial lightness for base color
-  const [isSolid, setIsSolid] = useState(true); // Set solid or wireframe cubes
 
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2); // Set Camera center
   const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
 
-  const [numberOfBubbles, setNumberOfBubbles] = useState(1); // Set initial number of bubbles
-
-  useEffect(() => {
+  useEffect((gridsize, margin) => {
     if (numberOfBubbles < bubbles.length) {
       bubbles.length = parseInt(numberOfBubbles);
     } else {
