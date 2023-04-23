@@ -2,7 +2,10 @@ import React, { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry } from "three";
 import { OrbitControls } from "@react-three/drei";
+
+import { generateRandomDuration, generateRandomLocation, generateRandomOffsets } from "./components/randomGenerator";
 import useCubeColor from "./hooks/useCubeColor";
+import useAnimation from "./hooks/useAnimation";
 
 // Global variables - These exist because I am not handling and passing them properly yet
 const bubbles = [];
@@ -30,141 +33,6 @@ const gradientStyle = {
   backgroundSize: "300% 300%",
   animation: "rotateGradient 10s ease infinite",
 };
-
-/** Generate a 2D array of random offsets for a grid of given size.
- * @param {number} gridsize - The size of the grid.
- * @returns {Array<Array<number>>} 2D array of random offsets.
- */
-const generateRandomOffsets = (gridsize) => {
-  const offsets = [];
-  for (let x = 0; x < gridsize; x++) {
-    offsets[x] = [];
-    for (let z = 0; z < gridsize; z++) {
-      offsets[x][z] = Math.random() * 2 * Math.PI;
-    }
-  }
-  return offsets;
-};
-
-/** Generate a random duration within a specified range.
- * @param {number} minDuration - The minimum duration.
- * @param {number} maxDuration - The maximum duration.
- * @returns {number} A random duration between minDuration and maxDuration.
- */
-const generateRandomDuration = (minDuration, maxDuration) => {
-  const duration = Math.random() * (maxDuration - minDuration) + minDuration;
-  return duration;
-};
-
-/** Generate a random location within a grid.
- * @param {number} gridsize - The size of the grid.
- * @param {number} margin - The margin around the grid.
- * @returns {Vector3} A Vector3 representing the random location.
- */
-const generateRandomLocation = (gridsize, margin) => {
-  const x = Math.floor(Math.random() * (gridsize - 2 * margin) + margin);
-  const z = Math.floor(Math.random() * (gridsize - 2 * margin) + margin);
-  return new Vector3(x, 0, z);
-};
-
-/** Animation Functions **/
-const animation1 = (state, position) => {
-  const time = state.clock.getElapsedTime();
-  const delayX = (position.x + 2) * 0.7;
-  const delayZ = (position.z + 2) * 0.9;
-  const waveSpeed = 2.0;
-
-  return Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ);
-};
-
-const animation2 = (state, position, gridsize, margin) => {
-  const time = state.clock.getElapsedTime();
-  const waveSpeed = 5.0;
-  const rippleRadius = gridsize / 2 - margin;
-  const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2);
-  const decayFactor = 1.0 / rippleRadius; // Adjust decay factor based on ripple radius
-
-  const dx = position.x - center.x;
-  const dz = position.z - center.z;
-  const distance = Math.sqrt(dx * dx + dz * dz);
-
-  const phaseOffset = distance;
-  const height = Math.sin(time * waveSpeed - phaseOffset) * Math.max(0, 1 - distance * decayFactor);
-
-  return height * 1.5;
-};
-
-const animation3 = (state, position, randomOffsets) => {
-  const time = state.clock.getElapsedTime();
-  const waveSpeed = 12.0;
-  const bubbleSize = 1.0;
-  const bubbleIntensity = 1;
-
-  const offsetX = randomOffsets[position.x][position.z];
-
-  const height = Math.sin(time * waveSpeed + offsetX) * Math.cos(time * waveSpeed + offsetX) * bubbleSize;
-
-  return height * bubbleIntensity;
-};
-
-const animation4 = (state, position, gridsize, margin, bubbles) => {
-  const time = state.clock.getElapsedTime();
-  const timeNow = Date.now();
-  const waveSpeed = 12.0;
-  const rippleRadius = 4;
-  const heightMultiplier = 1; // Start at twice the height
-  const timeDecayFactor = 1.0; // Controls how quickly ripples get shorter
-
-  let height = 0;
-
-  bubbles.forEach((bubble) => {
-    let { location, duration, due, complete } = bubble;
-
-    // Create adjustedTime to control how long until the ripples disappear
-    const adjustedTime = ((bubble.due - 0.5 - timeNow) * timeDecayFactor) / 2000;
-
-    if (timeNow >= bubble.due - 50) {
-      bubble.complete = true;
-    }
-
-    if (complete) {
-      location = generateRandomLocation(gridsize, margin);
-      bubble.location = location;
-      duration = generateRandomDuration(500, 4000);
-      bubble.duration = duration;
-      due = timeNow + duration;
-      bubble.due = due;
-      complete = false;
-      bubble.complete = complete;
-    }
-
-    const intensity = (due - timeNow) / duration;
-    const dx = position.x - location.x;
-    const dz = position.z - location.z;
-    const distance = Math.sqrt(dx * dx + dz * dz);
-
-    if (distance <= rippleRadius) {
-      const decayFactor = 1.0 / rippleRadius; // Adjust decay factor based on ripple radius
-
-      const phaseOffset = distance;
-      height +=
-        Math.sin((time + adjustedTime) * waveSpeed - phaseOffset) *
-        Math.max(0, 1 - distance * decayFactor) *
-        adjustedTime *
-        intensity;
-    }
-  });
-
-  const scaledHeight = height * heightMultiplier;
-
-  return scaledHeight;
-};
-
-const animation5 = () => {};
-const animation6 = () => {};
-const animation7 = () => {};
-const animation8 = () => {};
-const animation9 = () => {};
 
 /** Cube component. Renders a cube at the given position with the specified animation.
  * @param {Vector3} position - The position of the cube in the array.
@@ -199,6 +67,7 @@ const Cube = ({
 }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
+  const { animation1, animation2, animation3, animation4 } = useAnimation();
 
   const centeredPosition = useMemo(
     () => new Vector3(position.x - (gridsize - 1) / 2, 0, position.z - (gridsize - 1) / 2),
@@ -264,7 +133,6 @@ const Cube = ({
       setMaterialColor(newMaterialColor);
       cubeMaterial.color.set(newMaterialColor);
       edgeMaterial.color.set(newMaterialColor);
-
       cubeMaterial.wireframe = !isSolid;
     }
 
@@ -298,7 +166,6 @@ const Controls = ({ center, gridsize }) => {
   return <OrbitControls ref={controls} args={[camera]} />;
 };
 
-
 /** Main App component.
  * @returns {React.Element} - The rendered App component.
  */
@@ -323,23 +190,26 @@ const App = () => {
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2); // Set Camera center
   const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
 
-  useEffect((gridsize, margin) => {
-    if (numberOfBubbles < bubbles.length) {
-      bubbles.length = parseInt(numberOfBubbles);
-    } else {
-      for (let i = 0; i < numberOfBubbles; i++) {
-        let location = generateRandomLocation(gridsize, margin);
-        let duration = generateRandomDuration(1, 6);
-        let due = Date.now() + duration;
-        bubbles.push({
-          location,
-          duration,
-          due,
-          complete: false,
-        });
+  useEffect(
+    (gridsize, margin) => {
+      if (numberOfBubbles < bubbles.length) {
+        bubbles.length = parseInt(numberOfBubbles);
+      } else {
+        for (let i = 0; i < numberOfBubbles; i++) {
+          let location = generateRandomLocation(gridsize, margin);
+          let duration = generateRandomDuration(1, 6);
+          let due = Date.now() + duration;
+          bubbles.push({
+            location,
+            duration,
+            due,
+            complete: false,
+          });
+        }
       }
-    }
-  }, [numberOfBubbles]);
+    },
+    [numberOfBubbles]
+  );
 
   useEffect(() => {
     if (isSolid) {
