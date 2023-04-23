@@ -3,10 +3,9 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry } from "three";
 import { OrbitControls } from "@react-three/drei";
 
-import { generateRandomDuration, generateRandomLocation, generateRandomOffsets } from "./components/randomGenerator";
+import { generateRandomDuration, generateRandomLocation, generateRandomOffsets } from "./modules/randomGenerator";
 import useCubeColor from "./hooks/useCubeColor";
-import useAnimation from "./hooks/useAnimation";
-
+import { animation1, animation2, animation3, animation4 } from "./modules/animations";
 // Global variables - These exist because I am not handling and passing them properly yet
 const bubbles = [];
 
@@ -54,7 +53,6 @@ const Cube = ({
   position,
   animation,
   gridsize,
-  randomOffsets,
   colorPercent,
   isSolid,
   margin,
@@ -67,7 +65,8 @@ const Cube = ({
 }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
-  const { animation1, animation2, animation3, animation4 } = useAnimation();
+  const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
+
 
   const centeredPosition = useMemo(
     () => new Vector3(position.x - (gridsize - 1) / 2, 0, position.z - (gridsize - 1) / 2),
@@ -93,7 +92,7 @@ const Cube = ({
     [materialColor]
   );
 
-  // This is where my memory leak was coming from. I was creating a new box every time the component re-rendered. If the height map color was applied and the color didn't change, the materials were never disposed. Memoizing the geometry was the solution.
+  // This is where my memory leak was coming from. I was creating a new box every time the component re-rendered. If the height map color was applied, the materials in the new box were never disposed. Memoizing the box was the solution.
   const boxGeometry = useMemo(() => new BoxBufferGeometry(1, 1, 1), []);
 
   useEffect(() => {
@@ -188,7 +187,6 @@ const App = () => {
 
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2); // Set Camera center
-  const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
 
   useEffect(
     (gridsize, margin) => {
@@ -234,7 +232,6 @@ const App = () => {
           position={position}
           animation={animation}
           gridsize={gridsize}
-          randomOffsets={randomOffsets}
           colorPercent={colorPercent}
           isSolid={isSolid}
           margin={margin}
