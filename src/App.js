@@ -6,6 +6,7 @@ import { OrbitControls } from "@react-three/drei";
 import { generateRandomDuration, generateRandomLocation, generateRandomOffsets } from "./modules/randomGenerator";
 import useCubeColor from "./hooks/useCubeColor";
 import { animation1, animation2, animation3, animation4 } from "./modules/animations";
+
 // Global variables - These exist because I am not handling and passing them properly yet
 const bubbles = [];
 

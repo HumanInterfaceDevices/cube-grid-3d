@@ -2,9 +2,9 @@ import { useState } from "react";
 
 const useCubeColor = () => {
   const threshold = 2;
-  const color1 = { r: 0, g: 0, b: 255 }; // Blue - Lowest
-  const color2 = { r: 128, g: 0, b: 0 }; // Red - Neutral
-  const color3 = { r: 0, g: 255, b: 0 }; // Green - Highest
+  const colorLow = { r: 0, g: 0, b: 255 }; // Blue - Lowest
+  const colorMid = { r: 128, g: 0, b: 0 }; // Red - Neutral
+  const colorHigh = { r: 0, g: 255, b: 0 }; // Green - Highest
   const colorThreshold = { r: 255, g: 255, b: 255 }; // White - Threshold
   const [colorBase, setColorBase] = useState({ r: 64, g: 0, b: 0 }); // Red - Base
 
@@ -23,7 +23,7 @@ const useCubeColor = () => {
     let red, green, blue;
 
     if (saturation === 0) {
-      red = green = blue = lightness; // achromatic (grey)
+      red = green = blue = lightness; // greyscale
     } else {
       const interpolated =
         lightness < 0.5
@@ -43,55 +43,46 @@ const useCubeColor = () => {
   };
 
   const calculateCubeColor = (height, colorPercent) => {
-    let color;
+    let color, color1, color2;
+    let thresholdRatio;
 
     // Calculate extremes first
     if (height < -threshold || height > threshold) {
       color = colorThreshold;
-      // Calculate the negative middle range
+      return `rgb(${color.r}, ${color.g}, ${color.b})`;
+      // Negative range
     } else if (height < 0) {
-      const t = 1 - Math.abs(height / threshold);
-      const r = Math.floor(
-        colorBase.r * (1 - colorPercent / 100) +
-          (color1.r * (1 - t) + color2.r * t) * (colorPercent / 100)
-      );
-      const g = Math.floor(
-        colorBase.g * (1 - colorPercent / 100) +
-          (color1.g * (1 - t) + color2.g * t) * (colorPercent / 100)
-      );
-      const b = Math.floor(
-        colorBase.b * (1 - colorPercent / 100) +
-          (color1.b * (1 - t) + color2.b * t) * (colorPercent / 100)
-      );
-      color = { r, g, b };
-      // Calculate the positive middle range
+        thresholdRatio = 1 - Math.abs(height / threshold);
+      color1 = { ...colorLow };
+      color2 = { ...colorMid };
+      // Positive range
     } else {
-      const t = Math.abs(height / threshold);
-      const r = Math.floor(
-        colorBase.r * (1 - colorPercent / 100) +
-          (color2.r * (1 - t) + color3.r * t) * (colorPercent / 100)
-      );
-      const g = Math.floor(
-        colorBase.g * (1 - colorPercent / 100) +
-          (color2.g * (1 - t) + color3.g * t) * (colorPercent / 100)
-      );
-      const b = Math.floor(
-        colorBase.b * (1 - colorPercent / 100) +
-          (color2.b * (1 - t) + color3.b * t) * (colorPercent / 100)
-      );
-      color = { r, g, b };
+        thresholdRatio = Math.abs(height / threshold);
+      color1 = { ...colorMid };
+      color2 = { ...colorHigh };
     }
+    // Actually mathing the color to the height
+    const r = Math.floor(
+      colorBase.r * (1 - colorPercent / 100) +
+        (color1.r * (1 - thresholdRatio) + color2.r * thresholdRatio) * (colorPercent / 100)
+    );
+    const g = Math.floor(
+      colorBase.g * (1 - colorPercent / 100) +
+        (color1.g * (1 - thresholdRatio) + color2.g * thresholdRatio) * (colorPercent / 100)
+    );
+    const b = Math.floor(
+      colorBase.b * (1 - colorPercent / 100) +
+        (color1.b * (1 - thresholdRatio) + color2.b * thresholdRatio) * (colorPercent / 100)
+    );
+    color = { r, g, b };
+
     return `rgb(${color.r}, ${color.g}, ${color.b})`;
   };
 
   return {
-    calculateCubeColor,
-    color1,
-    color2,
-    color3,
-    colorThreshold,
     colorBase,
     setColorBase,
+    calculateCubeColor,
     hslToRgb,
   };
 };

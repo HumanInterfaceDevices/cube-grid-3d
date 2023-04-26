@@ -5,13 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image: linear-gradient(#490000, #000000);
   color: red;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
 }
 
 .App {
@@ -41,9 +35,10 @@ code {
   box-shadow: 5px 5px 10px 5px rgba(255, 0, 0, 0.4);
   border-width: 2px;
   border-color: red;
-  border-radius: 5px;
+  border-radius: 15px;
   align-items: center;
   margin: 0.5rem;
+  overflow: hidden;
 }
 
 .color-box-parent {
