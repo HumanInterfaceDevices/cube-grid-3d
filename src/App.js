@@ -3,30 +3,13 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry } from "three";
 import { OrbitControls } from "@react-three/drei";
 
-import { generateRandomDuration, generateRandomLocation, generateRandomOffsets } from "./modules/randomGenerator";
+import { generateRandomDuration, generateRandomLocation, generateRandomOffsets } from "./modules/randomGenerators";
 import useCubeColor from "./hooks/useCubeColor";
 import { animation1, animation2, animation3, animation4 } from "./modules/animations";
-
+import { slider, sliderThumbStyle, sliderTrackStyle } from "./components/slider";
 // Global variables - These exist because I am not handling and passing them properly yet
 const bubbles = [];
 
-// CSS styles - These exist because I have not created proper, independent components yet
-// Slider styles
-const sliderThumbStyle = {
-  appearance: "none",
-  width: "200px",
-  height: "4px",
-  background: "red",
-  cursor: "pointer",
-};
-const sliderTrackStyle = {
-  appearance: "none",
-  width: "100%",
-  height: "4px",
-  background: "red",
-  borderRadius: "3px",
-  cursor: "pointer",
-};
 // Background gradient rotation animation - **DEBUG** - not working?
 const gradientStyle = {
   background: "linear-gradient(15deg, rgb(20,0,20), rgb(70,0,0), rgb(20,0,0), rgb(70,70,0))",
@@ -67,7 +50,6 @@ const Cube = ({
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
   const randomOffsets = useMemo(() => generateRandomOffsets(gridsize), [gridsize]);
-
 
   const centeredPosition = useMemo(
     () => new Vector3(position.x - (gridsize - 1) / 2, 0, position.z - (gridsize - 1) / 2),
@@ -184,17 +166,18 @@ const App = () => {
   const [colorPercent, setColorPerent] = useState(0); // Set initial heightmap color percentage
   const [hue, setHue] = useState(0); // Set initial hue for base color
   const [saturation, setSaturation] = useState(0); // Set initial saturation for base color
-  const [lightness, setLightness] = useState(0); // Set initial lightness for base color
+  const [lightness, setLightness] = useState(0.0); // Set initial lightness for base color
 
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2); // Set Camera center
 
+  //
   useEffect(
     (gridsize, margin) => {
       if (numberOfBubbles < bubbles.length) {
         bubbles.length = parseInt(numberOfBubbles);
       } else {
-        for (let i = 0; i < numberOfBubbles; i++) {
+        for (let i = bubbles.length; i < numberOfBubbles; i++) {
           let location = generateRandomLocation(gridsize, margin);
           let duration = generateRandomDuration(1, 6);
           let due = Date.now() + duration;
@@ -210,17 +193,25 @@ const App = () => {
     [numberOfBubbles]
   );
 
+  // Set the color of the solid/wireframe button
   useEffect(() => {
     if (isSolid) {
-      setSolidButtonColor({ backgroundColor: `black` });
+      setSolidButtonColor({
+        backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+        backgroundColor: `black`,
+      });
+      setWireframeButtonColor({
+        borderColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+      });
     } else {
       setSolidButtonColor({
         backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
       });
+      setWireframeButtonColor({
+        borderColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+        display: "none",
+      });
     }
-    setWireframeButtonColor({
-      borderColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
-    });
   }, [isSolid, hue, saturation, lightness]);
 
   // Generate cubes
@@ -292,6 +283,18 @@ const App = () => {
         <Controls center={center} gridsize={gridsize} />
       </Canvas>
       <div className="slider-row absolute top-0">
+        <div className="control-box solidbutton">
+          <button
+            className="button"
+            id="solid-button"
+            type="button"
+            value={isSolid}
+            onClick={handleSolidChange}
+            style={{ ...solidButtonColor }}
+          >
+            <div className="wireframeButton" style={{ ...wireframeButtonColor }}></div>
+          </button>
+        </div>
         <div className="control-box">
           <label className="slider" htmlFor="lightness-slider">
             Lightness:
@@ -302,7 +305,7 @@ const App = () => {
             type="range"
             min="0"
             max="1"
-            step="0.01"
+            step="0.004"
             value={lightness}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
             onChange={handleLightnessChange}
@@ -318,7 +321,7 @@ const App = () => {
             type="range"
             min="0"
             max="1"
-            step="0.01"
+            step="0.004"
             value={saturation}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
             onChange={handleSaturationChange}
@@ -334,25 +337,13 @@ const App = () => {
             type="range"
             min="0"
             max="1"
-            step="0.01"
+            step="0.004"
             value={hue}
             style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
             onChange={handleHueChange}
           />
         </div>
 
-        <div className="control-box solidbutton">
-          <button
-            className="button"
-            id="solid-button"
-            type="button"
-            value={isSolid}
-            onClick={handleSolidChange}
-            style={{ ...solidButtonColor }}
-          >
-            <div className="wireframeButton" style={{ ...wireframeButtonColor }}></div>
-          </button>
-        </div>
         <div className="control-box">
           <label className="slider" htmlFor="color-slider">
             H Color:

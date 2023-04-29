@@ -1,0 +1,18 @@
+.button {
+	width: 75px;
+	height: 100%;
+	border: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+  
+  .wireframeButton {
+	width: 90%;
+	height: 2px;
+	color: none;
+	background-color: none;
+	border-width: 2px;
+	border-radius: 3px;
+  }
+  

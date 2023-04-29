@@ -1,5 +1,5 @@
 import { Vector3 } from "three";
-import { generateRandomDuration, generateRandomLocation } from "./randomGenerator";
+import { generateRandomDuration, generateRandomLocation } from "./randomGenerators";
 
 export const animation1 = (state, position) => {
   const time = state.clock.getElapsedTime();
