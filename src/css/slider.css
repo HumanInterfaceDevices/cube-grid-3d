@@ -28,23 +28,23 @@
   }
   
   .slider::-moz-range-thumb {
+	appearance: none;
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
 	border-color: red;
 	background: red;
 	color: red;
-	cursor: finger;
+	cursor: pointer;
   }
   
   .slider::-webkit-slider-thumb {
 	-webkit-appearance: none;
-	appearance: none;
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
 	background: red;
 	color: red;
-	cursor: finger;
+	cursor: pointer;
   }
   

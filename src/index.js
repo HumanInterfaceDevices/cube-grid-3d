@@ -1,22 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import './css/App.css';
-import './css/controls.css';
-import './css/slider.css';
-import './css/button.css';
+import "./css/App.css";
+import "./css/controls.css";
+import "./css/slider.css";
+import "./css/button.css";
 
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import { GridProvider } from "./context/GridProvider";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+import App from "./App";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <App />
+    {/* <GridProvider> */}
+      <App />
+    {/* </GridProvider> */}
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

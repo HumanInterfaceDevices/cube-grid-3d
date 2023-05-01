@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect, useState } from "react";
+import React, { useRef, useMemo, useEffect, useState, useContext } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { BoxGeometry, Vector3, EdgesGeometry, LineBasicMaterial, MeshStandardMaterial, BoxBufferGeometry } from "three";
 import { OrbitControls } from "@react-three/drei";
@@ -6,7 +6,9 @@ import { OrbitControls } from "@react-three/drei";
 import { generateRandomDuration, generateRandomLocation, generateRandomOffsets } from "./modules/randomGenerators";
 import useCubeColor from "./hooks/useCubeColor";
 import { animation1, animation2, animation3, animation4 } from "./modules/animations";
-import { slider, sliderThumbStyle, sliderTrackStyle } from "./components/slider";
+import { Slider, sliderThumbStyle, sliderTrackStyle } from "./components/Sliders";
+
+import GridContext from "./context/GridContext";
 // Global variables - These exist because I am not handling and passing them properly yet
 const bubbles = [];
 
@@ -152,6 +154,9 @@ const Controls = ({ center, gridsize }) => {
  * @returns {React.Element} - The rendered App component.
  */
 const App = () => {
+
+  // const {} = useContext(GridContext);
+
   const { colorBase, setColorBase, calculateCubeColor, hslToRgb } = useCubeColor();
 
   const [isSolid, setIsSolid] = useState(true); // Set solid or wireframe cubes
@@ -164,8 +169,8 @@ const App = () => {
   const [margin, setMargin] = useState(0); // Set initial margin
 
   const [colorPercent, setColorPerent] = useState(0); // Set initial heightmap color percentage
-  const [hue, setHue] = useState(0); // Set initial hue for base color
-  const [saturation, setSaturation] = useState(0); // Set initial saturation for base color
+  const [hue, setHue] = useState(0.0); // Set initial hue for base color
+  const [saturation, setSaturation] = useState(0.0); // Set initial saturation for base color
   const [lightness, setLightness] = useState(0.0); // Set initial lightness for base color
 
   const cubes = [];
@@ -195,24 +200,26 @@ const App = () => {
 
   // Set the color of the solid/wireframe button
   useEffect(() => {
+    const newColor = `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`
+    console.log(newColor)
     if (isSolid) {
       setSolidButtonColor({
-        backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
         backgroundColor: `black`,
       });
       setWireframeButtonColor({
-        borderColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+        borderColor: newColor,
+        display: "flex",
       });
     } else {
       setSolidButtonColor({
-        backgroundColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+        backgroundColor: newColor,
       });
       setWireframeButtonColor({
-        borderColor: `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`,
+        borderColor: newColor,
         display: "none",
       });
     }
-  }, [isSolid, hue, saturation, lightness]);
+  }, [isSolid, colorBase]);
 
   // Generate cubes
   for (let x = 0; x < gridsize; x++) {
@@ -295,6 +302,7 @@ const App = () => {
             <div className="wireframeButton" style={{ ...wireframeButtonColor }}></div>
           </button>
         </div>
+
         <div className="control-box">
           <label className="slider" htmlFor="lightness-slider">
             Lightness:
