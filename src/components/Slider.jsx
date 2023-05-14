@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { GridContext } from "../context/GridContext";
+import SliderContext from "../context/SliderContext";
 
 export const sliderThumbStyle = {
   appearance: "none",
@@ -18,8 +18,9 @@ export const sliderTrackStyle = {
 };
 
 
-const Slider = () => {
-  const {divClassName, labelClassName, labelHtmlFor, labelInner, inputClassName, id, min, max, step, value, onChange, style} = useContext(GridContext)
+function Slider( sliderProps ) {
+  const {divClassName, labelClassName, labelHtmlFor, labelInner, inputClassName, id, min, max, step, sliderValue, onChange, style} = useContext(SliderContext);
+
   return (
     <div className={divClassName}>
       <label className={labelClassName} htmlFor={labelHtmlFor}>
@@ -32,7 +33,7 @@ const Slider = () => {
         min={min}
         max={max}
         step={step}
-        value={value}
+        value={sliderValue}
         style={style}
         onChange={onChange}
       />

@@ -59,6 +59,7 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
       bubble.complete = true;
     }
 
+    // If the bubble is complete, generate a new bubble
     if (complete) {
       location = generateRandomLocation(gridsize, margin);
       bubble.location = location;
@@ -70,6 +71,7 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
       bubble.complete = complete;
     }
 
+    // inverse deltaTime / duration controls how large the ripple starts
     const intensity = (due - timeNow) / duration;
     const dx = position.x - location.x;
     const dz = position.z - location.z;
@@ -77,10 +79,8 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
 
     if (distance <= rippleRadius) {
       const decayFactor = 1.0 / rippleRadius; // Adjust decay factor based on ripple radius
-
-      const phaseOffset = distance;
       height +=
-        Math.sin((time + adjustedTime) * waveSpeed - phaseOffset) *
+        Math.sin((time + adjustedTime) * waveSpeed - distance) *
         Math.max(0, 1 - distance * decayFactor) *
         adjustedTime *
         intensity;
