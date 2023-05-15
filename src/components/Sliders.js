@@ -1,16 +1,62 @@
-
-const HueSlider = (props) => {
-	divClassName = "control-box",
-	labelClassName = "slider",
-	labelHtmlFor = "lightness-slider",
-	labelInner = "Lightness",
-	inputClassName = "slider",
-	id = "slider",
-	min = 0,
-	max = 1,
-	step = 0.004,
-	value = "{props.lightness}",
-	style = "{...sliderTrackStyle, ...sliderThumbStyle}",
-	onChange = "{props.handleLightnessChange}",
+export const LightnessSlider = {
+  divClassName: "control-box",
+  labelClassName: "slider",
+  labelHtmlFor: "lightness-slider",
+  labelInner: "Lightness",
+  inputClassName: "slider",
+  id: "slider",
+  min: 0,
+  max: 1,
+  step: 0.004,
+  value: "{lightness}",
+  style: {
+    appearance: "none",
+    width: "200px",
+    height: "4px",
+    background: "red",
+    borderRadius: "3px",
+    cursor: "finger",
+  },
 };
-	
+
+export const SaturationSlider = {
+  divClassName: "control-box",
+  labelClassName: "slider",
+  labelHtmlFor: "saturation-slider",
+  labelInner: "Saturation",
+  inputClassName: "slider",
+  id: "slider",
+  min: 0,
+  max: 1,
+  step: 0.004,
+  value: "{saturation}",
+  style: {
+    appearance: "none",
+    width: "200px",
+    height: "4px",
+    background: "red",
+    borderRadius: "3px",
+    cursor: "finger",
+  },
+};
+
+export const HueSlider = {
+  divClassName: "control-box",
+  labelClassName: "slider",
+  labelHtmlFor: "hue-slider",
+  labelInner: "Hue",
+  inputClassName: "slider",
+  id: "slider",
+  min: 0,
+  max: 1,
+  step: 0.004,
+  value: "{hue}",
+  style: {
+    appearance: "none",
+    width: "200px",
+    height: "4px",
+    background: "red",
+    borderRadius: "3px",
+    cursor: "finger",
+  },
+};

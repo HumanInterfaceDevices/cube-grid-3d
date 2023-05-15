@@ -15,8 +15,7 @@ const useCubeColor = () => {
       if (tempHue > 1) tempHue -= 1;
       if (tempHue < 1 / 6) return pivot + (interpolated - pivot) * 6 * tempHue;
       if (tempHue < 1 / 2) return interpolated;
-      if (tempHue < 2 / 3)
-        return pivot + (interpolated - pivot) * (2 / 3 - tempHue) * 6;
+      if (tempHue < 2 / 3) return pivot + (interpolated - pivot) * (2 / 3 - tempHue) * 6;
       return pivot;
     }
 
@@ -26,9 +25,7 @@ const useCubeColor = () => {
       red = green = blue = lightness; // greyscale
     } else {
       const interpolated =
-        lightness < 0.5
-          ? lightness * (1 + saturation)
-          : lightness + saturation - lightness * saturation;
+        lightness < 0.5 ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
       const pivot = 2 * lightness - interpolated;
       red = hueToRgb(pivot, interpolated, hue + 1 / 3);
       green = hueToRgb(pivot, interpolated, hue);
@@ -52,12 +49,12 @@ const useCubeColor = () => {
       return `rgb(${color.r}, ${color.g}, ${color.b})`;
       // Negative range
     } else if (height < 0) {
-        thresholdRatio = 1 - Math.abs(height / threshold);
+      thresholdRatio = 1 - Math.abs(height / threshold);
       color1 = { ...colorLow };
       color2 = { ...colorMid };
       // Positive range
     } else {
-        thresholdRatio = Math.abs(height / threshold);
+      thresholdRatio = Math.abs(height / threshold);
       color1 = { ...colorMid };
       color2 = { ...colorHigh };
     }

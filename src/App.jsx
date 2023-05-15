@@ -5,17 +5,17 @@ import { OrbitControls } from "@react-three/drei";
 
 import { generateRandomDuration, generateRandomLocation } from "./utils/randomGenerators";
 import useCubeColor from "./hooks/useCubeColor";
-import { Slider, sliderThumbStyle, sliderTrackStyle } from "./components/Slider";
+import Slider, { sliderStyle } from "./components/Slider";
 import { Cube } from "./components/Cube";
 
 import SliderContext from "./context/SliderContext";
+import { HueSlider, LightnessSlider, SaturationSlider } from "./components/Sliders";
 
 // Global variables - These exist because I am not handling and passing them properly yet
-const bubbles = [];
 
 // Background gradient rotation animation - **DEBUG** - not working?
 const gradientStyle = {
-  background: "linear-gradient(15deg, rgb(20,0,20), rgb(70,0,0), rgb(20,0,0), rgb(70,70,0))",
+  background: "linear-gradient(145deg, rgb(128,0,0), rgb(32,0,0), rgb(0,32,32), rgb(0,255,255))",
   backgroundSize: "300% 300%",
   animation: "rotateGradient 10s ease infinite",
 };
@@ -42,7 +42,7 @@ const Controls = ({ center, gridsize }) => {
  * @returns {React.Element} - The rendered App component.
  */
 const App = () => {
-  // const {} = useContext(GridContext);
+  // const {} = useContext(SliderContext);
 
   const { colorBase, setColorBase, calculateCubeColor, hslToRgb } = useCubeColor();
 
@@ -57,14 +57,14 @@ const App = () => {
   const [margin, setMargin] = useState(0); // Set initial margin
 
   const [colorPercent, setColorPerent] = useState(0); // Set initial heightmap color percentage
-  const [hue, setHue] = useState(0.0); // Set initial hue for base color
-  const [saturation, setSaturation] = useState(0.0); // Set initial saturation for base color
-  const [lightness, setLightness] = useState(0.0); // Set initial lightness for base color
+  const [hue, setHue] = useState(0.5); // Set initial hue for base color
+  const [saturation, setSaturation] = useState(0.5); // Set initial saturation for base color
+  const [lightness, setLightness] = useState(0.5); // Set initial lightness for base color
 
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2); // Set Camera center
-  
-  //
+
+  // Pushes new bubbles or truncates the bubbles array if the number of bubbles changes
   useEffect(
     (gridsize, margin) => {
       if (numberOfBubbles < bubbles.length) {
@@ -72,7 +72,8 @@ const App = () => {
       } else {
         for (let i = bubbles.length; i < numberOfBubbles; i++) {
           let location = generateRandomLocation(gridsize, margin);
-          let duration = generateRandomDuration(1, 6);
+          let duration = generateRandomDuration(1000, 6000);
+          console.log(duration)
           let due = Date.now() + duration;
           bubbles.push({
             location,
@@ -89,7 +90,6 @@ const App = () => {
   // Set the color of the solid/wireframe button
   useEffect(() => {
     const newColor = `rgb(${colorBase.r}, ${colorBase.g}, ${colorBase.b})`;
-    console.log(newColor);
     if (isSolid) {
       setSolidButtonColor({
         backgroundColor: `black`,
@@ -135,24 +135,16 @@ const App = () => {
   }
 
   // Handle solid button click
-  const handleSolidChange = (event) => {
-    setIsSolid(!isSolid);
-  };
+  const handleSolidChange = (event) => setIsSolid(!isSolid);
 
   // Handle hue slider change
-  const handleHueChange = (event) => {
-    setHue(parseFloat(event.target.value));
-  };
+  const handleHueChange = (event) => setHue(parseFloat(event.target.value));
 
   // Handle saturation slider change
-  const handleSaturationChange = (event) => {
-    setSaturation(parseFloat(event.target.value));
-  };
+  const handleSaturationChange = (event) => setSaturation(parseFloat(event.target.value));
 
   // Handle lightness slider change
-  const handleLightnessChange = (event) => {
-    setLightness(parseFloat(event.target.value));
-  };
+  const handleLightnessChange = (event) => setLightness(parseFloat(event.target.value));
 
   // Handle gridsize slider change
   const handleGridSizeChange = (event) => setGridsize(parseInt(event.target.value, 10));
@@ -164,16 +156,13 @@ const App = () => {
   const handleAnimationChange = (event) => setAnimation(parseInt(event.target.value, 10));
 
   // Handle number of bubbles slider change
-  const handleNumBubblesChange = (event) => {
-    setNumberOfBubbles(parseInt(event.target.value, 10));
-  };
+  const handleNumBubblesChange = (event) => setNumberOfBubbles(parseInt(event.target.value, 10));
 
   // Render the App
   return (
     <SliderContext.Provider>
       <div className="bg fixed inset-0 flex items-center justify-center" style={gradientStyle}>
         <Canvas camera={{ position: [10, 10, 10], fov: 50 }}>
-          {/* <color attach="background" args={["black"]} /> */}
           <ambientLight />
           <pointLight position={[10, 20, 20]} />
           <React.Fragment>{cubes}</React.Fragment>
@@ -193,54 +182,9 @@ const App = () => {
             </button>
           </div>
 
-          <div className="control-box">
-            <label className="slider" htmlFor="lightness-slider">
-              Lightness:
-            </label>
-            <input
-              className="slider"
-              id="lightness-slider"
-              type="range"
-              min="0"
-              max="1"
-              step="0.004"
-              value={lightness}
-              style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-              onChange={handleLightnessChange}
-            />
-          </div>
-          <div className="control-box">
-            <label className="slider" htmlFor="saturation-slider">
-              Saturation:
-            </label>
-            <input
-              className="slider"
-              id="saturation-slider"
-              type="range"
-              min="0"
-              max="1"
-              step="0.004"
-              value={saturation}
-              style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-              onChange={handleSaturationChange}
-            />
-          </div>
-          <div className="control-box">
-            <label className="slider" htmlFor="hue-slider">
-              Hue:
-            </label>
-            <input
-              className="slider"
-              id="hue-slider"
-              type="range"
-              min="0"
-              max="1"
-              step="0.004"
-              value={hue}
-              style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
-              onChange={handleHueChange}
-            />
-          </div>
+          <Slider {...LightnessSlider} onChange={handleLightnessChange} />
+          <Slider {...SaturationSlider} onChange={handleSaturationChange} />
+          <Slider {...HueSlider} onChange={handleHueChange} />
 
           <div className="control-box">
             <label className="slider" htmlFor="color-slider">
@@ -253,7 +197,7 @@ const App = () => {
               min="0"
               max="100"
               value={colorPercent}
-              style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+              style={{ ...sliderStyle }}
               onChange={handleColorChange}
             />
           </div>
@@ -268,7 +212,7 @@ const App = () => {
               min="5"
               max="40"
               value={gridsize}
-              style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+              style={{ ...sliderStyle }}
               onChange={handleGridSizeChange}
             />
           </div>
@@ -283,7 +227,7 @@ const App = () => {
               min="1"
               max="4"
               value={animation}
-              style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+              style={{ ...sliderStyle }}
               onChange={handleAnimationChange}
             />
           </div>
@@ -298,7 +242,7 @@ const App = () => {
               min="1"
               max="25"
               value={numberOfBubbles}
-              style={{ ...sliderTrackStyle, ...sliderThumbStyle }}
+              style={{ ...sliderStyle }}
               onChange={handleNumBubblesChange}
             />
           </div>

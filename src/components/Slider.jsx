@@ -1,42 +1,29 @@
-import { useContext } from "react";
-import SliderContext from "../context/SliderContext";
-
-export const sliderThumbStyle = {
+export const sliderStyle = {
   appearance: "none",
   width: "200px",
-  height: "4px",
-  background: "red",
-  cursor: "finger",
-};
-export const sliderTrackStyle = {
-  appearance: "none",
-  width: "100%",
   height: "4px",
   background: "red",
   borderRadius: "3px",
   cursor: "finger",
 };
 
-
-function Slider( sliderProps ) {
-  const {divClassName, labelClassName, labelHtmlFor, labelInner, inputClassName, id, min, max, step, sliderValue, onChange, style} = useContext(SliderContext);
-
+function Slider(props) {
   return (
-    <div className={divClassName}>
-      <label className={labelClassName} htmlFor={labelHtmlFor}>
-        {labelInner}
+    <div className={props.divClassName}>
+      <label className={props.labelClassName} htmlFor={props.labelHtmlFor}>
+        {props.labelInner}
       </label>
       <input
-        className={inputClassName}
-        id={id}
-        type="slider"
-        min={min}
-        max={max}
-        step={step}
-        value={sliderValue}
-        style={style}
-        onChange={onChange}
-      />
+        className="slider"
+        id={props.id}
+        type="range"
+        min={props.min}
+        max={props.max}
+        step={props.step}
+        value={props.sliderValue}
+        style={props.style}
+        onChange={(event) => props.onChange(event)}
+        />
     </div>
   );
 }

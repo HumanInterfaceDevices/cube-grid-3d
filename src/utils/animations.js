@@ -44,11 +44,10 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
   const timeNow = Date.now();
   const waveSpeed = 12.0;
   const rippleRadius = 4;
-  const heightMultiplier = 1; // Start at twice the height
   const timeDecayFactor = 1.0; // Controls how quickly ripples get shorter
 
   let height = 0;
-
+  
   bubbles.forEach((bubble) => {
     let { location, duration, due, complete } = bubble;
 
@@ -60,14 +59,15 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
     }
 
     // If the bubble is complete, generate a new bubble
-    if (complete) {
+    if (bubble.complete) {
+      console.log(bubble.complete)
       location = generateRandomLocation(gridsize, margin);
-      bubble.location = location;
-      duration = generateRandomDuration(500, 4000);
-      bubble.duration = duration;
+      duration = generateRandomDuration(1000, 6000);
       due = timeNow + duration;
-      bubble.due = due;
       complete = false;
+      bubble.location = location;
+      bubble.duration = duration;
+      bubble.due = due;
       bubble.complete = complete;
     }
 
@@ -86,10 +86,7 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
         intensity;
     }
   });
-
-  const scaledHeight = height * heightMultiplier;
-
-  return scaledHeight;
+  return height;
 };
 
 export const animation5 = () => {};
