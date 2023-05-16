@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import { OrbitControls } from "@react-three/drei";
 
 import { generateRandomDuration, generateRandomLocation } from "./utils/randomGenerators";
@@ -11,14 +11,8 @@ import { Cube } from "./components/Cube";
 import SliderContext from "./context/SliderContext";
 import { HueSlider, LightnessSlider, SaturationSlider } from "./components/Sliders";
 
-// Global variables - These exist because I am not handling and passing them properly yet
-
-// Background gradient rotation animation - **DEBUG** - not working?
-const gradientStyle = {
-  background: "linear-gradient(145deg, rgb(128,0,0), rgb(32,0,0), rgb(0,32,32), rgb(0,255,255))",
-  backgroundSize: "300% 300%",
-  animation: "rotateGradient 10s ease infinite",
-};
+// Background gradient
+const gradientStyle = { background: "linear-gradient(145deg, rgb(128,0,0), rgb(32,0,0), rgb(0,32,32), rgb(0,255,255))" };
 
 /** Controls component. Handles camera controls.
  * @param {Vector3} center - The center of the grid.
@@ -52,7 +46,6 @@ const App = () => {
 
   const [gridsize, setGridsize] = useState(5); // Set initial gridsize
   const [numberOfBubbles, setNumberOfBubbles] = useState(1); // Set initial number of bubbles
-  const bubbles = [];
   const [animation, setAnimation] = useState(1); // Set initial animation
   const [margin, setMargin] = useState(0); // Set initial margin
 
@@ -61,6 +54,7 @@ const App = () => {
   const [saturation, setSaturation] = useState(0.5); // Set initial saturation for base color
   const [lightness, setLightness] = useState(0.5); // Set initial lightness for base color
 
+  const [bubbles, setBubbles] = useState([{ location: [0, 0], duration: 0, due: 0, complete: false },]); // Set initial bubbles
   const cubes = [];
   const center = new Vector3((gridsize - 1) / 2, 0, (gridsize - 1) / 2); // Set Camera center
 
@@ -73,7 +67,6 @@ const App = () => {
         for (let i = bubbles.length; i < numberOfBubbles; i++) {
           let location = generateRandomLocation(gridsize, margin);
           let duration = generateRandomDuration(1000, 6000);
-          console.log(duration)
           let due = Date.now() + duration;
           bubbles.push({
             location,
@@ -129,6 +122,8 @@ const App = () => {
           hslToRgb={hslToRgb}
           setColorBase={setColorBase}
           bubbles={bubbles}
+          setBubbles={setBubbles}
+          numberOfBubbles={numberOfBubbles}
         />
       );
     }

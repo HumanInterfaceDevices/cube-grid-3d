@@ -2,7 +2,7 @@ import React, { useRef, useState, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Vector3, EdgesGeometry, BoxGeometry, BoxBufferGeometry, MeshStandardMaterial, LineBasicMaterial } from "three";
 
-import { animation1, animation2, animation3, animation4 } from "../utils/animations";
+import { Animation1, Animation2, Animation3, Animation4 } from "./Animations";
 import { generateRandomOffsets } from "../utils/randomGenerators";
 
 /** Cube component. Renders a cube at the given position with the specified animation.
@@ -19,6 +19,8 @@ import { generateRandomOffsets } from "../utils/randomGenerators";
  * @param {function} calculateCubeColor - Function to calculate the cube color.
  * @param {function} hslToRgb - Function to convert HSL to RGB.
  * @param {function} setColorBase - Function to set the color base.
+ * @param {Array<Vector3>} bubbles - Array of bubble positions.
+ * @param {number} numberOfBubbles - The number of bubbles to render.
  * @returns {React.Element} The rendered Cube component.
  */
 export const Cube = ({
@@ -35,6 +37,8 @@ export const Cube = ({
   hslToRgb,
   setColorBase,
   bubbles = [],
+  setBubbles,
+  numberOfBubbles,
 }) => {
   const ref = useRef();
   const [materialColor, setMaterialColor] = useState("white");
@@ -64,7 +68,7 @@ export const Cube = ({
     [materialColor]
   );
 
-  // This is where my memory leak was coming from. I was creating a new box every time the component re-rendered. If the height map color was applied, the materials in the new box were never disposed. Memoizing the box was the solution.
+  // This is where my memory leak was coming from. I was creating a new box every time the component re-rendered. If the height map color was applied, the materials in the new box were never disposed. Memoizing the box was the solution. It causes warnings, but it works without memory leaks.
   const boxGeometry = useMemo(() => new BoxBufferGeometry(1, 1, 1), []);
 
   useEffect(() => {
@@ -78,16 +82,16 @@ export const Cube = ({
     let newY = 0;
     switch (animation) {
       case 1:
-        newY = animation1(state, position, margin);
+        newY = Animation1(state, position, margin);
         break;
       case 2:
-        newY = animation2(state, position, gridsize, margin);
+        newY = Animation2(state, position, gridsize, margin);
         break;
       case 3:
-        newY = animation3(state, position, randomOffsets);
+        newY = Animation3(state, position, randomOffsets);
         break;
       case 4:
-        newY = animation4(state, position, gridsize, margin, bubbles);
+        newY = Animation4(state, position, gridsize, margin, bubbles, setBubbles, numberOfBubbles);
         break;
       default:
         break;

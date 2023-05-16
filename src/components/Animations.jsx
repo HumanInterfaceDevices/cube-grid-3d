@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { Vector3 } from "three";
-import { generateRandomDuration, generateRandomLocation } from "./randomGenerators";
+import { generateRandomDuration, generateRandomLocation } from "../utils/randomGenerators";
 
-export const animation1 = (state, position) => {
+export const Animation1 = (state, position) => {
   const time = state.clock.getElapsedTime();
   const delayX = (position.x + 2) * 0.7;
   const delayZ = (position.z + 2) * 0.9;
@@ -10,7 +11,7 @@ export const animation1 = (state, position) => {
   return Math.sin(time * waveSpeed + delayX) + Math.sin(time * waveSpeed + delayZ);
 };
 
-export const animation2 = (state, position, gridsize, margin) => {
+export const Animation2 = (state, position, gridsize, margin) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 5.0;
   const rippleRadius = gridsize / 2 - margin;
@@ -27,7 +28,7 @@ export const animation2 = (state, position, gridsize, margin) => {
   return height * 1.5;
 };
 
-export const animation3 = (state, position, randomOffsets) => {
+export const Animation3 = (state, position, randomOffsets) => {
   const time = state.clock.getElapsedTime();
   const waveSpeed = 12.0;
   const scale = 1;
@@ -39,7 +40,7 @@ export const animation3 = (state, position, randomOffsets) => {
   return height;
 };
 
-export const animation4 = (state, position, gridsize, margin, bubbles) => {
+export const Animation4 = (state, position, gridsize, margin, bubbles, numberOfBubbles) => {
   const time = state.clock.getElapsedTime();
   const timeNow = Date.now();
   const waveSpeed = 12.0;
@@ -47,20 +48,19 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
   const timeDecayFactor = 1.0; // Controls how quickly ripples get shorter
 
   let height = 0;
-  
+
+
   bubbles.forEach((bubble) => {
     let { location, duration, due, complete } = bubble;
 
     // Create adjustedTime to control how long until the ripples disappear
-    const adjustedTime = ((bubble.due - 0.5 - timeNow) * timeDecayFactor) / 2000;
+    const adjustedTime = ((due - 0.5 - timeNow) * timeDecayFactor) / 2000;
 
-    if (timeNow >= bubble.due - 50) {
-      bubble.complete = true;
+    if (timeNow >= due - 50) {
+      complete = true;
     }
-
     // If the bubble is complete, generate a new bubble
-    if (bubble.complete) {
-      console.log(bubble.complete)
+    if (complete) {
       location = generateRandomLocation(gridsize, margin);
       duration = generateRandomDuration(1000, 6000);
       due = timeNow + duration;
@@ -89,8 +89,8 @@ export const animation4 = (state, position, gridsize, margin, bubbles) => {
   return height;
 };
 
-export const animation5 = () => {};
-export const animation6 = () => {};
-export const animation7 = () => {};
-export const animation8 = () => {};
-export const animation9 = () => {};
+export const Animation5 = () => {};
+export const Animation6 = () => {};
+export const Animation7 = () => {};
+export const Animation8 = () => {};
+export const Animation9 = () => {};
