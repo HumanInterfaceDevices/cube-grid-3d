@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Vector2, Vector3 } from "three";
+import { Vector3 } from "three";
 import { OrbitControls } from "@react-three/drei";
 
 import { generateRandomDuration, generateRandomLocation } from "./utils/randomGenerators";
