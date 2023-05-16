@@ -1,6 +1,6 @@
 # It's a grid made of cubes in 3D!
 
-I think the cube part kinda alludes to the 3D part, though, so... kinda redundant saying 3D after cube, but I guess grids are 2D and that could lead to some confusion as to which dimension we're working in... anyway:
+I think the cube part kinda alludes to the 3D part, though, so... kinda redundant saying 3D after cube, but I guess grids are usually drawn in 2D and that could lead to some confusion as to which dimension we're working in... anyway:
 
 ### Aight folks, this is a Create React App app
 
@@ -9,7 +9,9 @@ So all the CRA shenanigans apply:
 [http://localhost:3000](http://localhost:3000)
 
 `npm start`
+
 `npm test`
+
 `npm run build`
 
 ## Got DarkReader?
