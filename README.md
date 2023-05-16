@@ -2,7 +2,7 @@
 
 I think the cube part kinda alludes to the 3D part, though, so... kinda redundant saying 3D after cube, but I guess grids are 2D and that could lead to some confusion as to which dimension we're working in... anyway:
 
-### Aight folks, this is a Create React App app #### app
+### Aight folks, this is a Create React App app
 
 So all the CRA shenanigans apply:
 
