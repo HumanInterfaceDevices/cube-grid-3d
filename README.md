@@ -14,7 +14,7 @@ So all the CRA shenanigans apply:
 
 ## Got DarkReader?
 
-So do I.  I love it.  But.  It really messed with me for a while trying to debug why the color in the wireframe/solid selector weren't matching.  Might be a good idea to turn it off for this page if this one element's color matching being good and not total crap is your thing.  Or not.  You do you.
+So do I.  I love it.  But.  It really messed with me for a while trying to debug why the color in the wireframe/solid selector wasn't matching.  Might be a good idea to turn it off for this page if this one element's color matching being good and not total crap is your thing.  Or not.  You do you.
 
 ### Don't like my choice of background gradient?
 
