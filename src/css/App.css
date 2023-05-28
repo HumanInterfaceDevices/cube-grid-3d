@@ -1,7 +1,11 @@
 body {
+  display: grid;
+  grid-row: 1;
+  grid-column: 1;
   margin: 0;
+  justify-content: center;
+  align-items: center;
   overflow: hidden;
-  background-image: linear-gradient(to right, #ff0000, #00ffff);
   color: red;
   font-family: "Fira Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
     "Droid Sans", "Helvetica Neue", sans-serif;
@@ -12,12 +16,63 @@ body {
 #root {
   width: 100vw;
   height: 100vh;
-  display: flex;
+  display: grid;
   justify-content: center;
   align-items: center;
+}
+
+.bg {
+  width: 250vw;
+  height: 250vh;
+  grid-row: 1;
+  grid-column: 1;
+  left: -75%;
+  top: -75%;
+  background: linear-gradient(145deg, rgb(128, 0, 0), rgb(32, 0, 0) 40%, rgb(0, 32, 32) 60%, rgb(0, 255, 255));
+  -webkit-animation: fullRotation 60s linear infinite;
+  -moz-animation: fullRotation 60s linear infinite;
+  -ms-animation: fullRotation 60s linear infinite;
+  -o-animation: fullRotation 60s linear infinite;
+  animation: fullRotation 60s linear infinite;
+}
+
+.main {
+  width: 100vw;
+  height: 100vh;
+  grid-row: 1;
+  grid-column: 1;
 }
 
 canvas {
   width: 100% !important;
   height: 100% !important;
+}
+
+@-webkit-keyframes fullRotation /* Safari and Chrome */ {
+  from {
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes fullRotation {
+  from {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
 }
