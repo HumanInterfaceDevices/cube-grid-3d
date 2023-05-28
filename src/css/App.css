@@ -22,18 +22,18 @@ body {
 }
 
 .bg {
-  width: 250vw;
-  height: 250vh;
+  width: 250vmax;
+  height: 250vmax;
   grid-row: 1;
   grid-column: 1;
-  left: -75%;
-  top: -75%;
+  left: -75vmax;
+  top: -75vmax;
   background: linear-gradient(145deg, rgb(128, 0, 0), rgb(32, 0, 0) 40%, rgb(0, 32, 32) 60%, rgb(0, 255, 255));
-  -webkit-animation: fullRotation 60s linear infinite;
-  -moz-animation: fullRotation 60s linear infinite;
-  -ms-animation: fullRotation 60s linear infinite;
-  -o-animation: fullRotation 60s linear infinite;
-  animation: fullRotation 60s linear infinite;
+  -webkit-animation: fullRotation 30s linear infinite;
+  -moz-animation: fullRotation 30s linear infinite;
+  -ms-animation: fullRotation 30s linear infinite;
+  -o-animation: fullRotation 30s linear infinite;
+  animation: fullRotation 30s linear infinite;
 }
 
 .main {
